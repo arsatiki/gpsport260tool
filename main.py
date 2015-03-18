@@ -1,5 +1,10 @@
 from serial import Serial
 import operator
+import time
+
+# Lessons learned
+# RTS and DTS lines must be on, but no flow control?
+# After going to high speed, sleep some time before proceeding
 
 class Reply(object):
     def __init__(self, reply):
@@ -19,7 +24,6 @@ def send(ser, data):
 
 def receive(ser):
     d = ser.readline()
-    print "Y", repr(d)
 
     if d[0] != '$' or d[-5] != '*':
         # TODO ERROR
@@ -45,20 +49,23 @@ def main():
     send(s, 'PHLX829')
     print receive(s)
     
-    # Device name?
-    send(s, 'PHLX831')
-    print receive(s)
-    
-    # USB Icon turn-on
+    # USB Icon turn-on 15.221
     send(s, 'PHLX826')
-    print receive(s)
+    print receive(s) # 15.252
     
     # Ramming speed.
     s.baudrate = 921600
 
-    send(s, 'PHLX701')
-    trackcount = receive(s).data[0]
+    print "Baud rate", s.baudrate
+    time.sleep(1)
 
+    # Device name
+    send(s, 'PHLX831')
+    print receive(s)
+
+    send(s, 'PHLX709')
+    print receive(s).data[0]
+    
     # USB Icon turn-off
     #send(s, 'PHLX826')
     #receive(s)
