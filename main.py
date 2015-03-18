@@ -6,6 +6,8 @@ import time
 # RTS and DTS lines must be on, but no flow control?
 # After going to high speed, sleep some time before proceeding
 # 100 ms works, 90 ms doesn't anymore.
+# https://spreadsheets.google.com/spreadsheet/pub?key=0AnN2VfBv7cSycHlDTEgtMFRkTmUtNU4tNXRCb2t1T0E&gid=10
+
 
 NAP = 0.150
 
@@ -45,22 +47,20 @@ def main():
     send(s, 'PHLX810')
     print receive(s)
     
-    send(s, 'PHLX832')
-    print receive(s)
-    
-    # Firmware version
-    send(s, 'PHLX829')
-    print receive(s)
-    
     # USB Icon turn-on 15.221
     send(s, 'PHLX826')
     print receive(s) # 15.252
     
     # Ramming speed.
     s.baudrate = 921600
-
-    print "Baud rate", s.baudrate
     time.sleep(NAP)
+    
+    send(s, 'PHLX832')
+    print receive(s)
+    
+    # Firmware version
+    send(s, 'PHLX829')
+    print receive(s)
 
     # Device name
     send(s, 'PHLX831')

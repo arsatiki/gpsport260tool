@@ -21,7 +21,7 @@ type Trackpoint struct {
 	Alt      uint16
 	Heading  uint16
 	Distance uint32
-	_	 uint32
+	_	 uint32 // Cadence?
 }
 
 func (t Trackpoint) IsPOI() bool {
