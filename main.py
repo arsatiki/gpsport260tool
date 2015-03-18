@@ -5,6 +5,9 @@ import time
 # Lessons learned
 # RTS and DTS lines must be on, but no flow control?
 # After going to high speed, sleep some time before proceeding
+# 100 ms works, 90 ms doesn't anymore.
+
+NAP = 0.150
 
 class Reply(object):
     def __init__(self, reply):
@@ -57,7 +60,7 @@ def main():
     s.baudrate = 921600
 
     print "Baud rate", s.baudrate
-    time.sleep(1)
+    time.sleep(NAP)
 
     # Device name
     send(s, 'PHLX831')
@@ -67,8 +70,8 @@ def main():
     print receive(s).data[0]
     
     # USB Icon turn-off
-    #send(s, 'PHLX826')
-    #receive(s)
+    send(s, 'PHLX827')
+    receive(s)
 
 if __name__ == '__main__':
     main()
