@@ -21,15 +21,15 @@ type Trackpoint struct {
 	Alt      uint16
 	Heading  uint16
 	Distance uint32
-	_	 uint32 // Cadence?
+	_        uint32 // Cadence?
 }
 
 func (t Trackpoint) IsPOI() bool {
-	return t.Flags & 0x10 == 1
+	return t.Flags&0x10 == 1
 }
 
 func (t Trackpoint) Time() time.Time {
-	return time.Unix(t.TimeMKT + Y2000, 0)
+	return time.Unix(t.TimeMKT+Y2000, 0)
 }
 
 func main() {
