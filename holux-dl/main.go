@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"holux"
 )
 
 func main() {
-	c, err := Connect()
+	c, err := holux.Connect()
 
 	if err != nil {
 		// TODO LOG

@@ -1,4 +1,4 @@
-package main
+package holux
 
 import (
 	"bufio"
@@ -21,7 +21,7 @@ func TestSplitSuccess(t *testing.T) {
 	s.Scan()
 
 	if s.Err() != nil {
-		t.Fatal("error during splitting")
+		t.Fatal("error during splitting:", s.Err())
 	}
 	if s.Text() != "PHLX810" {
 		t.Fatal("parsed incorrect token")

@@ -1,4 +1,4 @@
-package main
+package holux
 
 import (
 	"bufio"
@@ -11,9 +11,11 @@ import (
 
 const (
 	NAP    = 150 * time.Millisecond
-	CMDFMT = "$%7s*%02X"
+	CMDFMT = "$%s*%02X\r\n"
 )
 
+// Conn manages the line-based and binary transmission with the GPS tracker.
+// TODO: Conn should use a generic reader for easier testing, rite?
 type Conn struct {
 	t     *term.Term
 	lines *bufio.Scanner
@@ -31,7 +33,6 @@ func Connect() (*Conn, error) {
 	t.SetDTR(true)
 
 	lines := bufio.NewScanner(t)
-	// TODO SPLITFUNC with checksum audit
 	return &Conn{t: t, lines: lines}, nil
 }
 
@@ -43,7 +44,6 @@ func (c Conn) Close() {
 func (c Conn) Send(cmd string) {
 	cs := checksum([]byte(cmd))
 	fmt.Fprintf(c.t, CMDFMT, cmd, cs)
-	c.t.Write([]byte("\r\n"))
 }
 
 func (c Conn) receive() []byte {
@@ -65,12 +65,16 @@ func (c Conn) ReadReply(expected string) error {
 	return nil
 }
 
-/*func (c Conn) ReadReplyArg(expected string) (int, error) {
+/*
+func (c Conn) ReadReplyArg(expected string) (int, error) {
+
+	reply := string(c.receive())
 	comma := []byte(",")
 	reply := c.receive()
 	parts := bytes.SplitN(reply, comma, 1)
-
+	// TODO: parts[0]
 }*/
+
 /*
 func hello(t *term.Term, s *bufio.Scanner) {
 	send(t, "PHLX810")
@@ -111,6 +115,8 @@ func split(data []byte, atEOF bool) (int, []byte, error) {
 	}
 
 	// This restringifying seems silly
+	// Also thsi failes wwhen using with data
+	// re think.
 	_, err = fmt.Sscanf(string(token), CMDFMT, &cmd, &cs)
 	if err != nil {
 		return advance, token, err
