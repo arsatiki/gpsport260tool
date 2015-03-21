@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/arsatiki/term"
@@ -104,24 +105,28 @@ func checksum(cmd []byte) byte {
 // split validates the checksum and strips out
 // $ and other bits from the command
 func split(data []byte, atEOF bool) (int, []byte, error) {
-	var (
-		cmd []byte
-		cs  byte
-	)
-
 	advance, token, err := bufio.ScanLines(data, atEOF)
 	if err != nil || token == nil {
 		return advance, token, err
 	}
 
-	// This restringifying seems silly
-	// Also thsi failes wwhen using with data
-	// re think.
-	_, err = fmt.Sscanf(string(token), CMDFMT, &cmd, &cs)
-	if err != nil {
-		return advance, token, err
+	L := len(token)
+
+	if token[0] != '$' || token[L-3] != '*' || L < 3 {
+		return advance, token, fmt.Errorf(
+			"format mismatch in command %s",
+			token)
 	}
-	if checksum(cmd) != cs {
+
+	cmd := token[1 : L-3]
+	check := string(token[L-2 : L])
+	cs, err := strconv.ParseUint(check, 16, 8)
+
+	if err != nil {
+		return advance, token, fmt.Errorf("bad checksum: %s", check)
+	}
+
+	if checksum(cmd) != byte(cs) {
 		return advance, cmd, fmt.Errorf(
 			"checksum mismatch: computed %02x, received %02x",
 			checksum(cmd),
