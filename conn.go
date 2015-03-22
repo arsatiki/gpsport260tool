@@ -2,9 +2,9 @@ package holux
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/arsatiki/term"
@@ -47,26 +47,52 @@ func (c Conn) Send(cmd string) {
 	fmt.Fprintf(c.t, CMDFMT, cmd, cs)
 }
 
-func (c Conn) receive() []byte {
-	// TODO ERROR?
+// receiveLine expects a prefix of the expected reply as a string
+// and returns split out data as args for further processing
+func (c Conn) receiveLine(p string) ([]string, error) {
 	c.lines.Scan()
-	buf := c.lines.Bytes()
-	return buf[1 : len(buf)-3]
-}
 
-func (c Conn) ReadReply(expected string) error {
-	reply := c.receive()
-	if !bytes.Equal(reply, []byte(expected)) {
-		return fmt.Errorf(
-			"bad reply, expected %s, got %s",
-			expected,
+	if c.lines.Err() != nil {
+		return nil, c.lines.Err()
+	}
+
+	reply := c.lines.Text()
+	if !strings.HasPrefix(reply, p) {
+		return nil, fmt.Errorf(
+			"expected prefix %s, got %s",
+			p,
 			reply)
 	}
 
-	return nil
+	parts := strings.Split(reply, ",")
+	return parts[1:], nil
+}
+
+func (c Conn) ReadReply(p string) error {
+	_, err := c.receiveLine(p)
+	return err
+}
+
+func (c Conn) ReadReply1Arg(p string) (int64, error) {
+	args, err := c.receiveLine(p)
+	if err != nil {
+		return 0, err
+	}
+
+	if L := len(args); L != 1 {
+		return 0, fmt.Errorf("Expected 1 arg, got %d", L)
+	}
+
+	arg1, err := strconv.ParseInt(args[0], 16, 0)
+	if err != nil {
+		return 0, err
+	}
+	return arg1, err
 }
 
 /*
+// TODO: There are up to 3 args
+// Some carry int data, others have a checksum at the end
 func (c Conn) ReadReplyArg(expected string) (int, error) {
 
 	reply := string(c.receive())
