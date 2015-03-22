@@ -68,39 +68,62 @@ func (c Conn) receiveLine(p string) ([]string, error) {
 	return parts[1:], nil
 }
 
+// parseIntArgs converts a group of integer strings at once.
+// The slice always has the same number of elements as the
+// number of bases given.
+func parseIntArgs(args []string, bases ...int) ([]int64, error) {
+	A := len(args)
+	B := len(bases)
+	vals := make([]int64, B)
+
+	if A != B {
+		err := fmt.Errorf("Expected %d args, got %d", B, A)
+		return vals, err
+	}
+
+	for k, s := range args {
+		v, err := strconv.ParseInt(s, bases[k], 0)
+		if err != nil {
+			return nil, err
+		}
+		vals[k] = v
+	}
+	return vals, nil
+}
+
+// ReadReply reads a message from the tracker and validates that
+// the prefix matches.
+// TODO: There's no string reply reading yet. Consider renaming to
+// Read0, Read1, Read3 and ReadS.
 func (c Conn) ReadReply(p string) error {
 	_, err := c.receiveLine(p)
 	return err
 }
 
-func (c Conn) ReadReply1Arg(p string) (int64, error) {
+// ReadReply1 reads a message from the tracker and returns
+// the numeric parameter.
+func (c Conn) ReadReply1(p string) (int64, error) {
 	args, err := c.receiveLine(p)
 	if err != nil {
 		return 0, err
 	}
 
-	if L := len(args); L != 1 {
-		return 0, fmt.Errorf("Expected 1 arg, got %d", L)
-	}
-
-	arg1, err := strconv.ParseInt(args[0], 16, 0)
-	if err != nil {
-		return 0, err
-	}
-	return arg1, err
+	vals, err := parseIntArgs(args, 10)
+	return vals[0], err
 }
 
-/*
-// TODO: There are up to 3 args
-// Some carry int data, others have a checksum at the end
-func (c Conn) ReadReplyArg(expected string) (int, error) {
+// ReadReply3 reads a message from the tracker containing
+// two decimal parameters and a checksum.
+func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
+	args, err := c.receiveLine(p)
+	if err != nil {
+		return 0, 0, 0, err
+	}
 
-	reply := string(c.receive())
-	comma := []byte(",")
-	reply := c.receive()
-	parts := bytes.SplitN(reply, comma, 1)
-	// TODO: parts[0]
-}*/
+	vals, err := parseIntArgs(args, 10, 10, 16)
+	return vals[0], vals[1], vals[2], err
+
+}
 
 /*
 func hello(t *term.Term, s *bufio.Scanner) {
