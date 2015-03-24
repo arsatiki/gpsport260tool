@@ -40,15 +40,15 @@ var TABLE = crc32.Table{
 	0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668, 0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4,
 }
 
-type HoluxHash struct {
+type holuxHash struct {
 	hash.Hash32
 }
 
 func NewHash() hash.Hash32 {
 	h := crc32.New(&TABLE)
-	return HoluxHash{h}
+	return holuxHash{h}
 }
 
-func (h HoluxHash) Sum32() uint32 {
+func (h holuxHash) Sum32() uint32 {
 	return ^h.Hash32.Sum32()
 }
