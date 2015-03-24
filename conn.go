@@ -3,49 +3,67 @@ package holux
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/arsatiki/term"
 )
 
-const (
-	NAP    = 150 * time.Millisecond
-	CMDFMT = "$%s*%02X\r\n"
-)
+const CMDFMT = "$%s*%02X\r\n"
 
-// Conn manages the line-based and binary transmission with the GPS tracker.
-// TODO: Conn should use a generic reader for easier testing, rite?
+// Conn manages the line-based and binary transmission with any
+// io.Reader. In particular, that Reader can be a serial connection
+// with the GPS tracker.
 type Conn struct {
-	t     *term.Term
+	rw     io.ReadWriter
 	lines *bufio.Scanner
 }
 
-func Connect() (*Conn, error) {
-	t, err := term.Open("/dev/cu.usbserial",
-		term.Speed(38400), term.RawMode)
-
-	if err != nil {
-		return nil, err
-	}
-
-	t.SetRTS(true)
-	t.SetDTR(true)
-
-	lines := bufio.NewScanner(t)
-	return &Conn{t: t, lines: lines}, nil
-}
-
-func (c Conn) Close() {
-	c.t.Close()
+func NewConn(rw io.ReadWriter) Conn {
+	lines := bufio.NewScanner(rw)
+	return Conn{rw, lines}
 }
 
 // TODO: These two should take errors.
 func (c Conn) Send(cmd string) {
 	cs := checksum([]byte(cmd))
-	fmt.Fprintf(c.t, CMDFMT, cmd, cs)
+	fmt.Fprintf(c.rw, CMDFMT, cmd, cs)
 }
+
+// ReadReply reads a message from the tracker and validates that
+// the prefix matches.
+// TODO: There's no string reply reading yet. Consider renaming to
+// Read0, Read1, Read3 and ReadS.
+func (c Conn) ReadReply(p string) error {
+	_, err := c.receiveLine(p)
+	return err
+}
+
+// ReadReply1 reads a message from the tracker and returns
+// the numeric parameter.
+func (c Conn) ReadReply1(p string) (int64, error) {
+	args, err := c.receiveLine(p)
+	if err != nil {
+		return 0, err
+	}
+
+	vals, err := parseIntArgs(args, 10)
+	return vals[0], err
+}
+
+// ReadReply3 reads a message from the tracker containing
+// two decimal parameters and a checksum.
+func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
+	args, err := c.receiveLine(p)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	vals, err := parseIntArgs(args, 10, 10, 16)
+	return vals[0], vals[1], vals[2], err
+
+}
+
+// TODO: ReadBinary
 
 // receiveLine expects a prefix of the expected reply as a string
 // and returns split out data as args for further processing
@@ -90,57 +108,6 @@ func parseIntArgs(args []string, bases ...int) ([]int64, error) {
 	}
 	return vals, nil
 }
-
-// ReadReply reads a message from the tracker and validates that
-// the prefix matches.
-// TODO: There's no string reply reading yet. Consider renaming to
-// Read0, Read1, Read3 and ReadS.
-func (c Conn) ReadReply(p string) error {
-	_, err := c.receiveLine(p)
-	return err
-}
-
-// ReadReply1 reads a message from the tracker and returns
-// the numeric parameter.
-func (c Conn) ReadReply1(p string) (int64, error) {
-	args, err := c.receiveLine(p)
-	if err != nil {
-		return 0, err
-	}
-
-	vals, err := parseIntArgs(args, 10)
-	return vals[0], err
-}
-
-// ReadReply3 reads a message from the tracker containing
-// two decimal parameters and a checksum.
-func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
-	args, err := c.receiveLine(p)
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	vals, err := parseIntArgs(args, 10, 10, 16)
-	return vals[0], vals[1], vals[2], err
-
-}
-
-/*
-func hello(t *term.Term, s *bufio.Scanner) {
-	send(t, "PHLX810")
-	fmt.Printf("%s\n", receive(s))
-
-	send(t, "PHLX826")
-	fmt.Printf("%s\n", receive(s))
-	t.SetHighSpeed(921600)
-	time.Sleep(NAP)
-}
-
-func bye(t *term.Term, s *bufio.Scanner) {
-	send(t, "PHLX827")
-	fmt.Printf("%s\n", receive(s))
-}
-*/
 
 func checksum(cmd []byte) byte {
 	var c byte
