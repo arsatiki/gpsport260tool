@@ -46,7 +46,7 @@ type HoluxHash struct {
 
 func NewHash() hash.Hash32 {
 	h := crc32.New(&TABLE)
-	return &HoluxHash{h}
+	return HoluxHash{h}
 }
 
 func (h HoluxHash) Sum32() uint32 {
