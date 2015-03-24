@@ -20,6 +20,7 @@ type Conn struct {
 
 func NewConn(rw io.ReadWriter) Conn {
 	lines := bufio.NewScanner(rw)
+	lines.Split(split)
 	return Conn{rw, lines}
 }
 
