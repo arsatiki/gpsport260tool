@@ -18,8 +18,8 @@ type longitude float32
 
 type Trackpoint struct {
 	TimeMKT  uint32
-	Lat      float32 // North Positive
-	Lon      float32 // East Positive
+	Lat      latitude // North Positive
+	Lon      longitude // East Positive
 	Height   uint16
 	Speed    uint16
 	_        byte
