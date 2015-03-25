@@ -73,7 +73,11 @@ type Index struct {
 	Distance uint32   // meters
 	Offset   uint32   // LIST_MEM_START_OFFSET=28
 	Size     uint32   // LIST_MEM_LENGTH_OFFSET=32 What's the diff with Length?
-	Unk	 [12]byte
+	SpeedMax uint16   // 35.6 km/h = 356.
+	SpeedAvg uint16
+	Calories uint16
+	HRMMax   byte // BPM
+	HRMAvg   byte
 	Int0     uint32
 	Int1     uint32
 	Int2     uint32
@@ -81,11 +85,19 @@ type Index struct {
 }
 
 func (i Index) String() string {
-	return fmt.Sprintf("Time: %v: Distance: %d, Duration: %v, Offset: %d tracks (%d B), Size: %d tracks (%d B)\nInts: %d, %d, %d, %d\n% 02x",
+	s := `Time: %v: Distance: %d, Duration: %v
+	Offset: %d points (%d B), Size: %d points (%d B)
+	SPDMAX: %d, SPDAVG: %d
+	HRMMax: %d, HRMAvg: %d, CAL: %d
+	Ints: %d, %d, %d, %d
+	% 02x | % 02x`
+	return fmt.Sprintf(s,
 		time.Unix(int64(i.TimeMKT)+Y2000, 0), i.Distance, time.Duration(i.Duration)*time.Second,
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
+		i.SpeedMax, i.SpeedAvg,
+		i.HRMMax, i.HRMAvg, i.Calories,
 		i.Int0, i.Int1, i.Int2, i.Int3,
-		i.Unk)
+		i.Unk2)
 }
 
 /*
