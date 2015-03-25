@@ -12,14 +12,10 @@ const (
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
 
-// Latitude and longitude are for easing the print formatting
-type latitude float32
-type longitude float32
-
 type Trackpoint struct {
 	TimeMKT  uint32
-	Lat      latitude // North Positive
-	Lon      longitude // East Positive
+	Lat      float32 // North Positive
+	Lon      float32 // East Positive
 	Height   uint16
 	Speed    uint16
 	_        byte
@@ -46,29 +42,18 @@ func (t Trackpoint) String() string {
 	var out bytes.Buffer
 
 	fmt.Fprintf(&out, t.Time().Format(TRKPTTIME))
-	fmt.Fprintf(&out, " %v, %v", t.Lat, t.Lon)
+	fmt.Fprintf(&out, " %s, %s",
+		fmtCoordinate(t.Lat, "N", "S"),
+		fmtCoordinate(t.Lon, "E", "W"))
 	return out.String()
 }
 
-func (lat latitude) String() string {
+func fmtCoordinate(v float32, pos, neg string) string {
 	switch {
-	case lat > 0:
-		return fmt.Sprintf("%0.5f °N", lat)
-	case lat < 0:
-		return fmt.Sprintf("%0.5f °S", -lat)
+	case v > 0:
+		return fmt.Sprintf("%0.5f °%s", v, pos)
+	case v < 0:
+		return fmt.Sprintf("%0.5f °%s", -v, neg)
 	}
-
-	return fmt.Sprintf("0 °")
-
-}
-
-func (lon longitude) String() string {
-	switch {
-	case lon > 0:
-		return fmt.Sprintf("%0.5f °E", lon)
-	case lon < 0:
-		return fmt.Sprintf("%0.5f °W", -lon)
-	}
-	return fmt.Sprintf("0 °")
-
+	return "0 °"
 }
