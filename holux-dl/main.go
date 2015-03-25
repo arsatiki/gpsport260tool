@@ -13,18 +13,23 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	defer c.Close()
+	c.Hello()
+	defer c.Bye()
 
-	/*
-		hello(t, scanner)
-		defer bye(t, scanner)
+	c.Send("PHLX701")
+	tcount, _ := c.ReadReply1("PHLX601")
 
-		send(t, "PHLX832")
-		receive(scanner)
+	c.Send(fmt.Sprintf("PHLX702,0,%d", tcount))
+	c.ReadReply("PHLX900,702,3")
+	ilen, icsum, _ := c.ReadReply1H("PHLX901") // index size, checksum
 
-		// List trakcs
-		send(t, "PHLX701")
-		reply := receive(scanner)
-		cmd, count := bytes.Split(reply, []byte(","))
-	*/
+	c.Send("PHLX900,901,3")
+	_, _, _, _ = c.ReadReply3("PHLX902")
+
+	c.Send("PHLX900,902,3")
+	index, err := c.ReadIndex(ilen, icsum)
+
+	for _, row := range index {
+		fmt.Println(row)
+	}
 }

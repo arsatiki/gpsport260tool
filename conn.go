@@ -53,16 +53,27 @@ func (c Conn) ReadReply1(p string) (int64, error) {
 	return vals[0], err
 }
 
+func (c Conn) ReadReply1H(p string) (int64, uint32, error) {
+	args, err := c.receiveLine(p)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	vals, err := parseIntArgs(args, 10, 16)
+	return vals[0], uint32(vals[1]), err
+}
+
+
 // ReadReply3 reads a message from the tracker containing
 // two decimal parameters and a checksum.
-func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
+func (c Conn) ReadReply3(p string) (int64, int64, uint32, error) {
 	args, err := c.receiveLine(p)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 
 	vals, err := parseIntArgs(args, 10, 10, 16)
-	return vals[0], vals[1], vals[2], err
+	return vals[0], vals[1], uint32(vals[2]), err
 
 }
 
