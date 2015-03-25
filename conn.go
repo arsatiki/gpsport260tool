@@ -110,7 +110,7 @@ func parseIntArgs(args []string, bases ...int) ([]int64, error) {
 	return vals, nil
 }
 
-func checksum(cmd []byte) byte {
+func foldXOR(cmd []byte) byte {
 	var c byte
 
 	for _, b := range cmd {
@@ -143,10 +143,10 @@ func split(data []byte, atEOF bool) (int, []byte, error) {
 		return advance, token, fmt.Errorf("bad checksum: %s", check)
 	}
 
-	if checksum(cmd) != byte(cs) {
+	if foldXOR(cmd) != byte(cs) {
 		return advance, cmd, fmt.Errorf(
 			"checksum mismatch: computed %02x, received %02x",
-			checksum(cmd),
+			foldXOR(cmd),
 			cs)
 	}
 

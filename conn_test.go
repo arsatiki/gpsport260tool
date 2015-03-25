@@ -8,7 +8,7 @@ import (
 
 func TestChecksum(t *testing.T) {
 	msg := []byte("PHLX810")
-	if checksum(msg) != 0x35 {
+	if foldXOR(msg) != 0x35 {
 		t.Fatal("checksum mismatch")
 	}
 }
