@@ -66,8 +66,21 @@ func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
 
 }
 
+// TODO: Solve duplication
 func (c Conn) ReadTrack(n int64, checksum uint32) (Track, error) {
 	t := make([]Trackpoint, n/TRACKSIZE)
+	h := NewHash()
+	tee := io.TeeReader(io.LimitReader(c.rw, n), h)
+	err := binary.Read(tee, binary.LittleEndian, t)
+
+	if cs := h.Sum32(); err == nil && cs != checksum {
+		err = fmt.Errorf("expected CRC %08x, got %08x", checksum, cs)
+	}
+	return t, err
+}
+
+func (c Conn) ReadIndex(n int64, checksum uint32) ([]Index, error) {
+	t := make([]Index, n/64)
 	h := NewHash()
 	tee := io.TeeReader(io.LimitReader(c.rw, n), h)
 	err := binary.Read(tee, binary.LittleEndian, t)
