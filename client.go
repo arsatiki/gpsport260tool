@@ -1,8 +1,8 @@
 package holux
 
 import (
-	"time"
 	"github.com/arsatiki/term"
+	"time"
 )
 
 const NAP = 150 * time.Millisecond

@@ -2,6 +2,8 @@ package holux
 
 import (
 	"bufio"
+	"encoding/binary"
+
 	"fmt"
 	"io"
 	"strconv"
@@ -14,7 +16,7 @@ const CMDFMT = "$%s*%02X\r\n"
 // io.Reader. In particular, that Reader can be a serial connection
 // with the GPS tracker.
 type Conn struct {
-	rw     io.ReadWriter
+	rw    io.ReadWriter
 	lines *bufio.Scanner
 }
 
@@ -26,7 +28,7 @@ func NewConn(rw io.ReadWriter) Conn {
 
 // TODO: These two should take errors.
 func (c Conn) Send(cmd string) {
-	cs := checksum([]byte(cmd))
+	cs := foldXOR([]byte(cmd))
 	fmt.Fprintf(c.rw, CMDFMT, cmd, cs)
 }
 
@@ -64,7 +66,17 @@ func (c Conn) ReadReply3(p string) (int64, int64, int64, error) {
 
 }
 
-// TODO: ReadBinary
+func (c Conn) ReadTrack(n int64, checksum uint32) (Track, error) {
+	t := make([]Trackpoint, n/TRACKSIZE)
+	h := NewHash()
+	tee := io.TeeReader(io.LimitReader(c.rw, n), h)
+	err := binary.Read(tee, binary.LittleEndian, t)
+
+	if cs := h.Sum32(); err == nil && cs != checksum {
+		err = fmt.Errorf("expected CRC %08x, got %08x", checksum, cs)
+	}
+	return t, err
+}
 
 // receiveLine expects a prefix of the expected reply as a string
 // and returns split out data as args for further processing
