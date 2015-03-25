@@ -12,8 +12,10 @@ const (
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
 
+type MKTTime uint32
+
 type Trackpoint struct {
-	TimeMKT  uint32
+	Time  MKTTime
 	Lat      float32 // North Positive
 	Lon      float32 // East Positive
 	Height   uint16
@@ -33,15 +35,15 @@ func (t Trackpoint) IsPOI() bool {
 	return t.Flags&0x10 == 1
 }
 
-func (t Trackpoint) Time() time.Time {
-	return time.Unix(int64(t.TimeMKT)+Y2000, 0)
+func (mt MKTTime) Time() time.Time {
+	return time.Unix(int64(t)+Y2000, 0)
 }
 
 // TODO: Add more fields, perhaps?
 func (t Trackpoint) String() string {
 	var out bytes.Buffer
 
-	fmt.Fprintf(&out, t.Time().Format(TRKPTTIME))
+	fmt.Fprintf(&out, t.Time.Time())
 	fmt.Fprintf(&out, " %s, %s",
 		fmtCoordinate(t.Lat, "N", "S"),
 		fmtCoordinate(t.Lon, "E", "W"))
