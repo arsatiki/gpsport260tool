@@ -63,7 +63,7 @@ func fmtCoordinate(v float32, pos, neg string) string {
 // 52 08 B6 17 FD 0B 00 00 3F 04 00 00 00 00 00 00
 // |--time---|             |distance-| |-offset--|
 // 37 00 00 00 47 00 0C 00 2E 00 02 00 02 00 00 00
-// |--size---|
+// |--size---| |smx| |sav| |cal|             HM HA 
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
 type Index struct {
 	_        [4]byte  // TODO double check
@@ -76,35 +76,25 @@ type Index struct {
 	SpeedMax uint16   // 35.6 km/h = 356.
 	SpeedAvg uint16
 	Calories uint16
+	Unk1	 [4]byte
 	HRMMax   byte // BPM
 	HRMAvg   byte
-	Int0     uint32
-	Int1     uint32
-	Int2     uint32
-	Int3     uint32
+	Unk2     [16]byte
 }
 
 func (i Index) String() string {
-	s := `Name: [% 02x] Time: %v: Distance: %d, Duration: %v
+	s := `Name: [% 02x] Time: %v: Distance: %d m, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
-	SPDMAX: %d, SPDAVG: %d
-	HRMMax: %d, HRMAvg: %d, CAL: %d
-	Ints: %d, %d, %d, %d
-	% 02x | % 02x`
+	SPDMAX: %.1f km/h, SPDAVG: %.1f km/h, CAL: %d
+	[% 02x]
+	HRMMax: %d, HRMAvg: %d
+	[% 02x]
+	`
 	return fmt.Sprintf(s, i.Name,
 		time.Unix(int64(i.TimeMKT)+Y2000, 0), i.Distance, time.Duration(i.Duration)*time.Second,
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
-		i.SpeedMax, i.SpeedAvg,
-		i.HRMMax, i.HRMAvg, i.Calories,
-		i.Int0, i.Int1, i.Int2, i.Int3,
+		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
+		i.Unk1,
+		i.HRMMax, i.HRMAvg, 
 		i.Unk2)
 }
-
-/*
-Time: 2012-08-09 05:34:10 +0000 UTC: Distance: 1087, Offset: 0 tracks/0 bytes, Size: 55 tracks/1760 bytes
-Time: 2015-03-07 17:06:07 +0000 UTC: Distance: 175, Offset: 56 tracks/1792 bytes, Size: 11 tracks/352 bytes
-Time: 2015-03-07 21:46:03 +0000 UTC: Distance: 1020, Offset: 67 tracks/2144 bytes, Size: 46 tracks/1472 bytes
-Time: 2015-03-08 10:53:39 +0000 UTC: Distance: 1379, Offset: 113 tracks/3616 bytes, Size: 99 tracks/3168 bytes
-Time: 2015-03-08 11:55:06 +0000 UTC: Distance: 926, Offset: 212 tracks/6784 bytes, Size: 19 tracks/608 bytes
-Time: 2015-03-09 05:27:40 +0000 UTC: Distance: 12505, Offset: 231 tracks/7392 bytes, Size: 459 tracks/14688 bytes
-*/

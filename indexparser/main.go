@@ -4,9 +4,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"time"
 	"holux"
 )
+
+/*
+Time: 2012-08-09 05:34:10 +0000 UTC: Distance: 1087, Offset: 0 tracks/0 bytes, Size: 55 tracks/1760 bytes
+Time: 2015-03-07 17:06:07 +0000 UTC: Distance: 175, Offset: 56 tracks/1792 bytes, Size: 11 tracks/352 bytes
+Time: 2015-03-07 21:46:03 +0000 UTC: Distance: 1020, Offset: 67 tracks/2144 bytes, Size: 46 tracks/1472 bytes
+Time: 2015-03-08 10:53:39 +0000 UTC: Distance: 1379, Offset: 113 tracks/3616 bytes, Size: 99 tracks/3168 bytes
+Time: 2015-03-08 11:55:06 +0000 UTC: Distance: 926, Offset: 212 tracks/6784 bytes, Size: 19 tracks/608 bytes
+Time: 2015-03-09 05:27:40 +0000 UTC: Distance: 12505, Offset: 231 tracks/7392 bytes, Size: 459 tracks/14688 bytes
+*/
 
 func main() {
 	data := []byte{
