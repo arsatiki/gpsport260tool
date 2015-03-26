@@ -63,7 +63,7 @@ func fmtCoordinate(v float32, pos, neg string) string {
 // 52 08 B6 17 FD 0B 00 00 3F 04 00 00 00 00 00 00
 // |--time---|             |distance-| |-offset--|
 // 37 00 00 00 47 00 0C 00 2E 00 02 00 02 00 00 00
-// |--size---| |smx| |sav| |cal|             HM HA 
+// |--size---| |smx| |sav| |cal|             HM HA
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
 type Index struct {
 	_        [4]byte  // TODO double check
@@ -76,7 +76,7 @@ type Index struct {
 	SpeedMax uint16   // 35.6 km/h = 356.
 	SpeedAvg uint16
 	Calories uint16
-	Unk1	 [4]byte
+	Unk1     [4]byte
 	HRMMax   byte // BPM
 	HRMAvg   byte
 	Unk2     [16]byte
@@ -95,6 +95,6 @@ func (i Index) String() string {
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
 		i.Unk1,
-		i.HRMMax, i.HRMAvg, 
+		i.HRMMax, i.HRMAvg,
 		i.Unk2)
 }
