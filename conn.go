@@ -2,8 +2,7 @@ package holux
 
 import (
 	"bufio"
-	"encoding/binary"
-
+	"bytes"
 	"fmt"
 	"io"
 	"strconv"
@@ -40,6 +39,9 @@ func (c Conn) Sendf(format string, a ...interface{}) {
 // the prefix matches.
 // TODO: There's no string reply reading yet. Consider renaming to
 // Read0, Read1, Read3 and ReadS.
+// TODO: Better syntax is ReadReply1("PHLX601", &tcount)
+// Closer to the line format.
+// Also make methods to Expect, ReadOffsetCount, &c.
 func (c Conn) ReadReply(p string) error {
 	_, err := c.receiveLine(p)
 	return err
@@ -80,29 +82,19 @@ func (c Conn) ReadReply3(p string) (int64, int64, uint32, error) {
 
 }
 
-// TODO: Solve duplication
-func (c Conn) ReadTrack(n int64, checksum uint32) (Track, error) {
-	t := make([]Trackpoint, n/TRACKSIZE)
+// TODO: All the information about n is carried by len(block)
+func (c Conn) ReadBlock(block []byte, checksum uint32) error {
+	n := int64(len(block))
 	h := NewHash()
-	tee := io.TeeReader(io.LimitReader(c.rw, n), h)
-	err := binary.Read(tee, binary.LittleEndian, t)
+	src := io.TeeReader(c.rw, h)
+	dst := bytes.NewBuffer(block)
+
+	_, err := io.CopyN(dst, src, n)
 
 	if cs := h.Sum32(); err == nil && cs != checksum {
 		err = fmt.Errorf("expected CRC %08x, got %08x", checksum, cs)
 	}
-	return t, err
-}
-
-func (c Conn) ReadIndex(n int64, checksum uint32) ([]Index, error) {
-	t := make([]Index, n/64)
-	h := NewHash()
-	tee := io.TeeReader(io.LimitReader(c.rw, n), h)
-	err := binary.Read(tee, binary.LittleEndian, t)
-
-	if cs := h.Sum32(); err == nil && cs != checksum {
-		err = fmt.Errorf("expected CRC %08x, got %08x", checksum, cs)
-	}
-	return t, err
+	return err
 }
 
 // receiveLine expects a prefix of the expected reply as a string
