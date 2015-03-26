@@ -32,6 +32,10 @@ func (c Conn) Send(cmd string) {
 	fmt.Fprintf(c.rw, CMDFMT, cmd, cs)
 }
 
+func (c Conn) Sendf(format string, a ...interface{}) {
+	c.Send(fmt.Sprintf(format, a...))
+}
+
 // ReadReply reads a message from the tracker and validates that
 // the prefix matches.
 // TODO: There's no string reply reading yet. Consider renaming to
