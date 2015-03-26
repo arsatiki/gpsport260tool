@@ -52,3 +52,7 @@ func NewHash() hash.Hash32 {
 func (h holuxHash) Sum32() uint32 {
 	return ^h.Hash32.Sum32()
 }
+
+func CRCChecksum(data []byte) uint32 {
+	return ^crc32.Checksum(data, &TABLE)
+}
