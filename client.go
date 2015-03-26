@@ -12,6 +12,7 @@ const NAP = 150 * time.Millisecond
 type Client struct {
 	Conn
 	*term.Term
+	BinaryMode bool
 }
 
 func Connect() (*Client, error) {
@@ -22,7 +23,7 @@ func Connect() (*Client, error) {
 		return nil, err
 	}
 
-	c := &Client{NewConn(t), t}
+	c := &Client{Conn: NewConn(t), Term: t}
 	c.SetRTS(true)
 	c.SetDTR(true)
 
@@ -50,4 +51,18 @@ func (c Client) Bye() {
 	c.Send("PHLX827")
 	c.ReadReply("PHLX860")
 	// Slow down port?
+}
+
+// EnableCommandMode allows the client to send regular commands to
+// the device. This is the default mode.
+func (c *Client) EnableCommandMode() {
+	c.BinaryMode = false
+}
+
+// EnableBinaryMode allows user to use binary transmission commands.
+// TODO: Non-binary methods should err if there is binary enabled.
+func (c *Client) EnableBinaryMode() {
+	// TODO:
+	// Write preamble
+	c.BinaryMode = true
 }

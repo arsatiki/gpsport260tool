@@ -63,7 +63,6 @@ func (c Conn) ReadReply1H(p string) (int64, uint32, error) {
 	return vals[0], uint32(vals[1]), err
 }
 
-
 // ReadReply3 reads a message from the tracker containing
 // two decimal parameters and a checksum.
 func (c Conn) ReadReply3(p string) (int64, int64, uint32, error) {
