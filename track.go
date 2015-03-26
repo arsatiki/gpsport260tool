@@ -85,13 +85,13 @@ type Index struct {
 }
 
 func (i Index) String() string {
-	s := `Time: %v: Distance: %d, Duration: %v
+	s := `Name: [% 02x] Time: %v: Distance: %d, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
 	SPDMAX: %d, SPDAVG: %d
 	HRMMax: %d, HRMAvg: %d, CAL: %d
 	Ints: %d, %d, %d, %d
 	% 02x | % 02x`
-	return fmt.Sprintf(s,
+	return fmt.Sprintf(s, i.Name,
 		time.Unix(int64(i.TimeMKT)+Y2000, 0), i.Distance, time.Duration(i.Duration)*time.Second,
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		i.SpeedMax, i.SpeedAvg,
