@@ -83,7 +83,7 @@ func (c Client) GetIndex() ([]Index, error) {
 	return index, nil
 }
 
-func (c Client) GetTrack(offset, count int64) (Track, error) {
+func (c Client) GetTrack(offset, count uint32) (Track, error) {
 	c.Sendf("PHLX703,%d,%d", offset, count)
 	err := c.Receive("PHLX900,703,3")
 
