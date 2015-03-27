@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/arsatiki/term"
+	"log"
 	"time"
 )
 
@@ -62,6 +63,10 @@ func (c Client) GetIndex() ([]Index, error) {
 
 	c.Send("PHLX701")
 	err := c.Receivef("PHLX601,%d", &count)
+	if err != nil {
+		log.Println("Received error: ", err)
+	}
+
 	c.Sendf("PHLX702,0,%d", count)
 	err = c.Receive("PHLX900,702,3")
 
@@ -102,14 +107,16 @@ func (c Client) GetFile() ([]byte, error) {
 	file := make([]byte, remaining)
 	for remaining > 0 {
 		offset, sz, bcrc, err := c.readBlockHeader()
+		if err != nil {
+			log.Fatal("could not read block header", err)
+		}
 		c.ackBlockHeader()
 		block := file[offset : offset+sz]
 		// TODO Separate conn into an actual object?
 		err = c.ReadBlock(block, bcrc)
-
 		if err != nil {
+			log.Fatal("file transfer error: ", err, fcrc)
 			// TODO REQUEST RESEND
-			panic("Argh")
 		} else {
 			remaining -= sz
 		}

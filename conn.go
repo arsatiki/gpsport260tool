@@ -2,9 +2,9 @@ package holux
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -27,6 +27,7 @@ func NewConn(rw io.ReadWriter) Conn {
 
 // TODO: These two should take errors.
 func (c Conn) Send(cmd string) {
+	log.Println("Sending ", cmd)
 	cs := foldXOR([]byte(cmd))
 	fmt.Fprintf(c.rw, CMDFMT, cmd, cs)
 }
