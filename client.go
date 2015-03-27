@@ -119,8 +119,13 @@ func (c Client) GetFile() ([]byte, error) {
 			// TODO REQUEST RESEND
 		} else {
 			remaining -= sz
+			c.ackBlock()
 		}
 	}
+
+	// A short sleep here avoids a hang-up
+	time.Sleep(1 * time.Millisecond)
+
 	if cs := CRCChecksum(file); cs != fcrc {
 		err = fmt.Errorf("expected file checksum %08x, got %08x", fcrc, cs)
 	}
