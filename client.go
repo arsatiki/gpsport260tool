@@ -130,7 +130,7 @@ func (c Client) ackFileHeader() {
 }
 
 func (c Client) readBlockHeader() (start, sz int64, crc uint32, err error) {
-	err = c.Receivef("PHLX902,%d, %d,%x", &start, &sz, &crc)
+	err = c.Receivef("PHLX902,%d,%d,%x", &start, &sz, &crc)
 	return start, sz, crc, err
 }
 
