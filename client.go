@@ -40,10 +40,10 @@ func (c Client) Close() {
 
 func (c Client) Hello() {
 	c.Send("PHLX810")
-	c.ReadReply("PHLX852") // ReadReplyString?
+	c.Receive("PHLX852") // Receivef?
 
 	c.Send("PHLX826")
-	c.ReadReply("PHLX859")
+	c.Receive("PHLX859")
 
 	// TODO: Whatabout 832, 861 (firmware)
 	// TODO: Handle errors before going here.
@@ -53,7 +53,7 @@ func (c Client) Hello() {
 
 func (c Client) Bye() {
 	c.Send("PHLX827")
-	c.ReadReply("PHLX860")
+	c.Receive("PHLX860")
 	// Slow down port?
 }
 
@@ -61,9 +61,9 @@ func (c Client) GetIndex() ([]Index, error) {
 	var count int64
 
 	c.Send("PHLX701")
-	err := c.ReadInt("PHLX601", &count)
+	err := c.Receivef("PHLX601,%d", &count)
 	c.Sendf("PHLX702,0,%d", count)
-	err = c.ReadReply("PHLX900,702,3")
+	err = c.Receive("PHLX900,702,3")
 
 	f, err := c.GetFile()
 	if err != nil {
@@ -79,10 +79,8 @@ func (c Client) GetIndex() ([]Index, error) {
 }
 
 func (c Client) GetTrack(offset, count int64) (Track, error) {
-	var start int64
-
 	c.Sendf("PHLX703,%d,%d", offset, count)
-	err := c.ReadReply("PHLX900,703,3")
+	err := c.Receive("PHLX900,703,3")
 
 	f, err := c.GetFile()
 	if err != nil {
@@ -122,24 +120,24 @@ func (c Client) GetFile() ([]byte, error) {
 	return file, err
 }
 
-func (c Client) readFileHeader() (int64, uint32, error) {
-	// expect 901, size, crc
-	return 0, 0, nil
+func (c Client) readFileHeader() (sz int64, crc uint32, err error) {
+	err = c.Receivef("PHLX901,%d,%x", &sz, &crc)
+	return sz, crc, err
 }
 
 func (c Client) ackFileHeader() {
-	// write 900,901,3
+	c.Send("PHLX900,901,3")
 }
 
-func (c Client) readBlockHeader() (int64, int64, uint32, error) {
-	// expect 902, offset, len, crc
-	return 0, 0, 0, nil
+func (c Client) readBlockHeader() (start, sz int64, crc uint32, err error) {
+	err = c.Receivef("PHLX902,%d, %d,%x", &start, &sz, &crc)
+	return start, sz, crc, err
 }
 
 func (c Client) ackBlockHeader() {
-	// write 900,902,3
+	c.Send("PHLX900,902,3")
 }
 
 func (c Client) ackBlock() {
-	// write 900,902,3
+	c.Send("PHLX900,902,3")
 }

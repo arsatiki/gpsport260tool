@@ -35,51 +35,29 @@ func (c Conn) Sendf(format string, a ...interface{}) {
 	c.Send(fmt.Sprintf(format, a...))
 }
 
-// ReadReply reads a message from the tracker and validates that
-// the prefix matches.
-// TODO: There's no string reply reading yet. Consider renaming to
-// Read0, Read1, Read3 and ReadS.
-// TODO: Better syntax is ReadReply1("PHLX601", &tcount)
-// Closer to the line format.
-// Also make methods to Expect, ReadOffsetCount, &c.
-func (c Conn) ReadReply(p string) error {
-	_, err := c.receiveLine(p)
+// Receive checks that message from the device matches an expected prefix
+func (c Conn) Receive(p string) error {
+	c.lines.Scan()
+	err := c.lines.Err()
+	s := c.lines.Text()
+
+	if err == nil && !strings.HasPrefix(s, p) {
+		err = fmt.Errorf("prefix %s not found in %s", p, s)
+	}
 	return err
 }
 
-// ReadReply1 reads a message from the tracker and returns
-// the numeric parameter.
-func (c Conn) ReadReply1(p string) (int64, error) {
-	args, err := c.receiveLine(p)
+// Receivef parses the message from the device according to the format
+// string.
+func (c Conn) Receivef(format string, a ...interface{}) error {
+	c.lines.Scan()
+	err := c.lines.Err()
+
 	if err != nil {
-		return 0, err
+		return err
 	}
-
-	vals, err := parseIntArgs(args, 10)
-	return vals[0], err
-}
-
-func (c Conn) ReadReply1H(p string) (int64, uint32, error) {
-	args, err := c.receiveLine(p)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	vals, err := parseIntArgs(args, 10, 16)
-	return vals[0], uint32(vals[1]), err
-}
-
-// ReadReply3 reads a message from the tracker containing
-// two decimal parameters and a checksum.
-func (c Conn) ReadReply3(p string) (int64, int64, uint32, error) {
-	args, err := c.receiveLine(p)
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	vals, err := parseIntArgs(args, 10, 10, 16)
-	return vals[0], vals[1], uint32(vals[2]), err
-
+	_, err = fmt.Sscanf(c.lines.Text(), format, a)
+	return err
 }
 
 // TODO: All the information about n is carried by len(block)
@@ -95,50 +73,6 @@ func (c Conn) ReadBlock(block []byte, checksum uint32) error {
 		err = fmt.Errorf("expected block CRC %08x, got %08x", checksum, cs)
 	}
 	return err
-}
-
-// receiveLine expects a prefix of the expected reply as a string
-// and returns split out data as args for further processing
-func (c Conn) receiveLine(p string) ([]string, error) {
-	c.lines.Scan()
-
-	if c.lines.Err() != nil {
-		return nil, c.lines.Err()
-	}
-
-	reply := c.lines.Text()
-	if !strings.HasPrefix(reply, p) {
-		return nil, fmt.Errorf(
-			"expected prefix %s, got %s",
-			p,
-			reply)
-	}
-
-	parts := strings.Split(reply, ",")
-	return parts[1:], nil
-}
-
-// parseIntArgs converts a group of integer strings at once.
-// The slice always has the same number of elements as the
-// number of bases given.
-func parseIntArgs(args []string, bases ...int) ([]int64, error) {
-	A := len(args)
-	B := len(bases)
-	vals := make([]int64, B)
-
-	if A != B {
-		err := fmt.Errorf("Expected %d args, got %d", B, A)
-		return vals, err
-	}
-
-	for k, s := range args {
-		v, err := strconv.ParseInt(s, bases[k], 0)
-		if err != nil {
-			return nil, err
-		}
-		vals[k] = v
-	}
-	return vals, nil
 }
 
 func foldXOR(cmd []byte) byte {
