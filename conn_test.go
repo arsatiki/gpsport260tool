@@ -40,6 +40,18 @@ func TestSplitFailure(t *testing.T) {
 	}
 }
 
+func TestReceivef(t *testing.T) {
+	var val1, val2 int64
+
+	data := bytes.NewBuffer([]byte("$PHLX900,902,3*3D\r\n"))
+	c := NewConn(data)
+	err := c.Receivef("PHLX900,%d,%d", &val1, &val2)
+
+	if err != nil {
+		t.Fatal("Receivef returned: ", err)
+	}
+}
+
 func TestTrackReadBlock(t *testing.T) {
 	data := []byte{0x7F, 0xEC, 0x8D, 0x1C, 0x65, 0xC8, 0x70, 0x42,
 		0xC0, 0x88, 0xC7, 0x41, 0x81, 0x00, 0x39, 0x00,
@@ -54,4 +66,3 @@ func TestTrackReadBlock(t *testing.T) {
 		t.Fatalf("failed to read a block: %v", err)
 	}
 }
-

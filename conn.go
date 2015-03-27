@@ -56,7 +56,7 @@ func (c Conn) Receivef(format string, a ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Sscanf(c.lines.Text(), format, a)
+	_, err = fmt.Sscanf(c.lines.Text(), format, a...)
 	return err
 }
 
