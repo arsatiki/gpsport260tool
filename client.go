@@ -55,7 +55,6 @@ func (c Client) Hello() {
 func (c Client) Bye() {
 	c.Send("PHLX827")
 	c.Receive("PHLX860")
-	// Slow down port?
 }
 
 func (c Client) GetIndex() ([]Index, error) {
