@@ -16,7 +16,7 @@ func main() {
 	c.Hello()
 	defer c.Bye()
 
-	index, err := c.getIndex()
+	index, err := c.GetIndex()
 	if err != nil {
 		fmt.Printf("Got error %v, arborting", err)
 	}
