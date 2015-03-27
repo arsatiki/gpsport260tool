@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"holux"
+	"log"
 )
 
 func main() {
 	c, err := holux.Connect()
 
 	if err != nil {
-		// TODO LOG
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	c.Hello()
@@ -18,9 +18,9 @@ func main() {
 
 	index, err := c.GetIndex()
 	if err != nil {
-		fmt.Printf("Got error %v, arborting", err)
+		log.Fatalf("Got error %v, arborting", err)
 	}
-	
+
 	for _, row := range index {
 		fmt.Println(row)
 	}
