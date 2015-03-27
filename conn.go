@@ -92,7 +92,7 @@ func (c Conn) ReadBlock(block []byte, checksum uint32) error {
 	_, err := io.CopyN(dst, src, n)
 
 	if cs := h.Sum32(); err == nil && cs != checksum {
-		err = fmt.Errorf("expected CRC %08x, got %08x", checksum, cs)
+		err = fmt.Errorf("expected block CRC %08x, got %08x", checksum, cs)
 	}
 	return err
 }
