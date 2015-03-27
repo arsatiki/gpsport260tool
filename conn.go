@@ -62,12 +62,9 @@ func (c Conn) Receivef(format string, a ...interface{}) error {
 
 // TODO: All the information about n is carried by len(block)
 func (c Conn) ReadBlock(block []byte, checksum uint32) error {
-	n := int64(len(block))
 	h := NewHash()
 	src := io.TeeReader(c.rw, h)
-	dst := bytes.NewBuffer(block)
-
-	_, err := io.CopyN(dst, src, n)
+	_, err := io.ReadFull(src, block)
 
 	if cs := h.Sum32(); err == nil && cs != checksum {
 		err = fmt.Errorf("expected block CRC %08x, got %08x", checksum, cs)
