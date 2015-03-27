@@ -17,7 +17,6 @@ const NAP = 150 * time.Millisecond
 type Client struct {
 	Conn
 	*term.Term
-	BinaryMode bool
 }
 
 func Connect() (*Client, error) {
@@ -143,18 +142,4 @@ func (c Client) ackBlockHeader() {
 
 func (c Client) ackBlock() {
 	// write 900,902,3
-}
-
-// EnableCommandMode allows the client to send regular commands to
-// the device. This is the default mode.
-func (c *Client) EnableCommandMode() {
-	c.BinaryMode = false
-}
-
-// EnableBinaryMode allows user to use binary transmission commands.
-// TODO: Non-binary methods should err if there is binary enabled.
-func (c *Client) EnableBinaryMode() {
-	// TODO:
-	// Write preamble
-	c.BinaryMode = true
 }
