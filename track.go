@@ -66,14 +66,15 @@ func fmtCoordinate(v float32, pos, neg string) string {
 // |--size---| |smx| |sav| |cal|             HM HA
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
 type Index struct {
-	_        [4]byte  // TODO double check
-	Name     [12]byte // offset=4, length=11????
-	TimeMKT  uint32   // MKTTime
-	Duration uint32   // seconds
-	Distance uint32   // meters
-	Offset   uint32   // LIST_MEM_START_OFFSET=28
-	Size     uint32   // LIST_MEM_LENGTH_OFFSET=32 What's the diff with Length?
-	SpeedMax uint16   // 35.6 km/h = 356.
+	F00F     [4]byte // TODO double check
+	Name     [10]byte
+	Unk      [2]byte // First byte can be \0 for C strings
+	TimeMKT  uint32  // MKTTime
+	Duration uint32  // seconds
+	Distance uint32  // meters
+	Offset   uint32  // LIST_MEM_START_OFFSET=28
+	Size     uint32  // LIST_MEM_LENGTH_OFFSET=32 What's the diff with Length?
+	SpeedMax uint16  // 35.6 km/h = 356.
 	SpeedAvg uint16
 	Calories uint16
 	Unk1     [4]byte
@@ -83,14 +84,15 @@ type Index struct {
 }
 
 func (i Index) String() string {
-	s := `Name: [% 02x] Time: %v: Distance: %d m, Duration: %v
+	s := `[FF0000FF: %02x] [Name: % 02x] [Unk: %02x]
+	Time: %v: Distance: %d m, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
 	SPDMAX: %.1f km/h, SPDAVG: %.1f km/h, CAL: %d
 	[% 02x]
 	HRMMax: %d, HRMAvg: %d
 	[% 02x]
 	`
-	return fmt.Sprintf(s, i.Name,
+	return fmt.Sprintf(s, i.F00F, i.Name, i.Unk,
 		time.Unix(int64(i.TimeMKT)+Y2000, 0), i.Distance, time.Duration(i.Duration)*time.Second,
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
