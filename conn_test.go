@@ -40,20 +40,18 @@ func TestSplitFailure(t *testing.T) {
 	}
 }
 
-func TestTrackReading(t *testing.T) {
+func TestTrackReadBlock(t *testing.T) {
 	data := []byte{0x7F, 0xEC, 0x8D, 0x1C, 0x65, 0xC8, 0x70, 0x42,
 		0xC0, 0x88, 0xC7, 0x41, 0x81, 0x00, 0x39, 0x00,
 		0x48, 0x05, 0x00, 0x00, 0x1F, 0x00, 0x6A, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	}
+	target := make([]byte, 32)
 
 	c := NewConn(bytes.NewBuffer(data))
-	tracks, err := c.ReadTrack(32, 0x421fe9dd)
+	err := c.ReadBlock(target, 0x421fe9dd)
 	if err != nil {
-		t.Fatalf("failed to parse a track: %v", err)
+		t.Fatalf("failed to read a block: %v", err)
 	}
-	if len(tracks) != 1 {
-		t.Fatalf("parsed incorrect number of entries: %d", len(tracks))
-	}
-	t.Logf("%v", tracks[0])
 }
+
