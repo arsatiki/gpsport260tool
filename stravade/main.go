@@ -1,67 +1,28 @@
 package main
 
 import (
-	"compress/gzip"
+_	"compress/gzip"
 	"encoding/xml"
 	"fmt"
 	"os"
 	"time"
 )
 
-const EXAMPLE = `
-<?xml version="1.0" encoding="UTF-8"?>
-<gpx 
-	creator="strava.com iPhone" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
- <metadata>
-  <time>2015-03-27T14:30:01Z</time>
- </metadata>
- <trk>
-  <name>Afternoon Ride</name>
-  <trkseg>
-   <trkpt lat="60.1732920" lon="24.9311040">
-    <ele>14.5</ele>
-    <time>2015-03-27T14:40:22Z</time>
-    <extensions>
-     <gpxtpx:TrackPointExtension>
-      <gpxtpx:hr>141</gpxtpx:hr>
-     </gpxtpx:TrackPointExtension>
-    </extensions>
-   </trkpt>
-`
-
-var point = Trkpt{
-	Lat:     60.1732920,
-	Lon:     24.9311040,
-	Ele:     14.5,
-	Time:    time.Now(),
-	HR:      90,
-	Cadence: 0,
-}
-var doc = GPX{
-	Creator: "Hocus pocus",
-	Version: "1.1",
-	Time:    time.Now(),
-	Track: Trk{
-		Name:     "Joyride",
-		Segments: []Trkseg{{Points: []Trkpt{point}}},
-	},
-}
+// TODO:
+// - format time as Zulu time
+// Support for more than one trkseg? Mebbe. Mebbe not.
 
 type GPX struct {
-	XMLName xml.Name  `xml:"gpx"`
-	Creator string    `xml:"creator,attr"`
-	Version string    `xml:"version,attr"`
-	Time    time.Time `xml:"metadata>time"`
-	Track   Trk       `xml:"trk"`
-}
-
-type Trk struct {
-	Name     string   `xml:"name"`
-	Segments []Trkseg `xml:"trkseg"`
-}
-
-type Trkseg struct {
-	Points []Trkpt `xml:"trkpt"`
+	XMLName   xml.Name  `xml:"gpx"`
+	XMLNS     string    `xml:"xmlns,attr"`
+	XMLNSxsi  string    `xml:"xmlns:xsi,attr"`
+	XMLSchema string    `xml:"xsi:schemaLocation,attr"`
+	Creator   string    `xml:"creator,attr"`
+	Version   string    `xml:"version,attr"`
+	Time      time.Time `xml:"metadata>time"`
+	
+	Name	string	`xml:"trk>name"`
+	Points []Trkpt `xml:"trk>trkseg>trkpt"`
 }
 
 type Trkpt struct {
@@ -73,8 +34,34 @@ type Trkpt struct {
 	Cadence int64     `xml:"extensions>cadence,omitempty"`
 }
 
+var point = Trkpt{
+	Lat:     60.1732920,
+	Lon:     24.9311040,
+	Ele:     14.5,
+	Time:    time.Now(),
+	HR:      90,
+	Cadence: 0,
+}
+
+func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
+	return GPX{
+		XMLNS: "http://www.topografix.com/GPX/1/1",
+		XMLNSxsi: "http://www.w3.org/2001/XMLSchema-instance",
+		XMLSchema: "http://www.topografix.com/GPX/1/1",
+		
+		Creator: "Holux GPSSport 260 Pro with barometer",
+		Version: "1.1",
+		Time: t,
+		Name: name,
+		Points: pts,
+	}
+}
+
 func main() {
-	dst := gzip.NewWriter(os.Stdout)
+	doc := NewGPX("Joyride", time.Now(), []Trkpt{point})
+	
+	//dst := gzip.NewWriter(os.Stdout)
+	dst := os.Stdout
 	defer dst.Close()
 	dst.Write([]byte(xml.Header))
 	enc := xml.NewEncoder(dst)
