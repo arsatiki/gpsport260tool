@@ -1,7 +1,7 @@
 package main
 
 import (
-_	"compress/gzip"
+	_ "compress/gzip"
 	"encoding/xml"
 	"fmt"
 	"os"
@@ -20,8 +20,8 @@ type GPX struct {
 	Creator   string    `xml:"creator,attr"`
 	Version   string    `xml:"version,attr"`
 	Time      time.Time `xml:"metadata>time"`
-	
-	Name	string	`xml:"trk>name"`
+
+	Name   string  `xml:"trk>name"`
 	Points []Trkpt `xml:"trk>trkseg>trkpt"`
 }
 
@@ -45,21 +45,21 @@ var point = Trkpt{
 
 func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
 	return GPX{
-		XMLNS: "http://www.topografix.com/GPX/1/1",
-		XMLNSxsi: "http://www.w3.org/2001/XMLSchema-instance",
+		XMLNS:     "http://www.topografix.com/GPX/1/1",
+		XMLNSxsi:  "http://www.w3.org/2001/XMLSchema-instance",
 		XMLSchema: "http://www.topografix.com/GPX/1/1",
-		
+
 		Creator: "Holux GPSSport 260 Pro with barometer",
 		Version: "1.1",
-		Time: t,
-		Name: name,
-		Points: pts,
+		Time:    t,
+		Name:    name,
+		Points:  pts,
 	}
 }
 
 func main() {
 	doc := NewGPX("Joyride", time.Now(), []Trkpt{point})
-	
+
 	//dst := gzip.NewWriter(os.Stdout)
 	dst := os.Stdout
 	defer dst.Close()
