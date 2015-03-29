@@ -13,7 +13,6 @@ import (
 var compressed = flag.Bool("z", false, "compress output with gzip")
 
 // TODO:
-// - format time as Zulu time
 // Support for more than one trkseg? Mebbe. Mebbe not.
 
 type GPX struct {
@@ -24,16 +23,16 @@ type GPX struct {
 	Creator   string   `xml:"creator,attr"`
 	Version   string   `xml:"version,attr"`
 
-	Time   time.Time `xml:"metadata>time"`
-	Name   string    `xml:"trk>name"`
-	Points []Trkpt   `xml:"trk>trkseg>trkpt"`
+	Time   GPXTime `xml:"metadata>time"`
+	Name   string  `xml:"trk>name"`
+	Points []Trkpt `xml:"trk>trkseg>trkpt"`
 }
 
 type Trkpt struct {
-	Lat  float32   `xml:"lat,attr"`
-	Lon  float32   `xml:"lon,attr"`
-	Ele  float32   `xml:"ele"`
-	Time time.Time `xml:"time"`
+	Lat  float32 `xml:"lat,attr"`
+	Lon  float32 `xml:"lon,attr"`
+	Ele  float32 `xml:"ele"`
+	Time GPXTime `xml:"time"`
 
 	// Heartrate and cadence are stored in extensions
 	// and may be empty.
@@ -45,9 +44,18 @@ var point = Trkpt{
 	Lat:     60.1732920,
 	Lon:     24.9311040,
 	Ele:     14.5,
-	Time:    time.Now(),
+	Time:    GPXTime{time.Now()},
 	HR:      90,
 	Cadence: 0,
+}
+
+type GPXTime struct {
+	time.Time
+}
+
+func (t GPXTime) MarshalText() ([]byte, error) {
+	u := t.UTC()
+	return []byte(u.Format(time.RFC3339)), nil
 }
 
 func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
@@ -58,7 +66,7 @@ func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
 
 		Creator: "Holux GPSSport 260 Pro with barometer",
 		Version: "1.1",
-		Time:    t,
+		Time:    GPXTime{t},
 		Name:    name,
 		Points:  pts,
 	}
