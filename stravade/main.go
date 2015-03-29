@@ -2,44 +2,22 @@ package main
 
 import (
 	"compress/gzip"
+	"database/sql"
 	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"time"
 )
 
-var compressed = flag.Bool("z", false, "compress output with gzip")
+var (
+	compressed = flag.Bool("z", false, "compress output with gzip")
+	filename   = flag.String("f", "holux.db", "path to track database")
+)
 
-// TODO:
-// Support for more than one trkseg? Mebbe. Mebbe not.
-
-type GPX struct {
-	XMLName   xml.Name `xml:"gpx"`
-	XMLNS     string   `xml:"xmlns,attr"`
-	XMLNSxsi  string   `xml:"xmlns:xsi,attr"`
-	XMLSchema string   `xml:"xsi:schemaLocation,attr"`
-	Creator   string   `xml:"creator,attr"`
-	Version   string   `xml:"version,attr"`
-
-	Time   GPXTime `xml:"metadata>time"`
-	Name   string  `xml:"trk>name"`
-	Points []Trkpt `xml:"trk>trkseg>trkpt"`
-}
-
-type Trkpt struct {
-	Lat  float32 `xml:"lat,attr"`
-	Lon  float32 `xml:"lon,attr"`
-	Ele  float32 `xml:"ele"`
-	Time GPXTime `xml:"time"`
-
-	// Heartrate and cadence are stored in extensions
-	// and may be empty.
-	HR      int64 `xml:"extensions>heartrate,omitempty"`
-	Cadence int64 `xml:"extensions>cadence,omitempty"`
-}
-
+/*
 var point = Trkpt{
 	Lat:     60.1732920,
 	Lon:     24.9311040,
@@ -47,30 +25,7 @@ var point = Trkpt{
 	Time:    GPXTime{time.Now()},
 	HR:      90,
 	Cadence: 0,
-}
-
-type GPXTime struct {
-	time.Time
-}
-
-func (t GPXTime) MarshalText() ([]byte, error) {
-	u := t.UTC()
-	return []byte(u.Format(time.RFC3339)), nil
-}
-
-func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
-	return GPX{
-		XMLNS:     "http://www.topografix.com/GPX/1/1",
-		XMLNSxsi:  "http://www.w3.org/2001/XMLSchema-instance",
-		XMLSchema: "http://www.topografix.com/GPX/1/1",
-
-		Creator: "Holux GPSSport 260 Pro with barometer",
-		Version: "1.1",
-		Time:    GPXTime{t},
-		Name:    name,
-		Points:  pts,
-	}
-}
+}*/
 
 func main() {
 	var dst io.Writer = os.Stdout
@@ -82,13 +37,24 @@ func main() {
 		dst = io.Writer(zdst)
 	}
 
-	doc := NewGPX("Joyride", time.Now(), []Trkpt{point})
+	db, err := sql.Open("sqlite3", *filename)
+	if err != nil {
+		log.Fatal("err")
+	}
+
+	points, err := GetTrackpoints(db, 1)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	doc := NewGPX("SQLtest", time.Now(), points)
 
 	dst.Write([]byte(xml.Header))
 	enc := xml.NewEncoder(dst)
 	enc.Indent("", "    ")
 
-	err := enc.Encode(doc)
+	err = enc.Encode(doc)
 
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
