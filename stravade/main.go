@@ -1,37 +1,44 @@
 package main
 
 import (
-	_ "compress/gzip"
+	"compress/gzip"
 	"encoding/xml"
+	"flag"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
+
+var compressed = flag.Bool("z", false, "compress output with gzip")
 
 // TODO:
 // - format time as Zulu time
 // Support for more than one trkseg? Mebbe. Mebbe not.
 
 type GPX struct {
-	XMLName   xml.Name  `xml:"gpx"`
-	XMLNS     string    `xml:"xmlns,attr"`
-	XMLNSxsi  string    `xml:"xmlns:xsi,attr"`
-	XMLSchema string    `xml:"xsi:schemaLocation,attr"`
-	Creator   string    `xml:"creator,attr"`
-	Version   string    `xml:"version,attr"`
-	Time      time.Time `xml:"metadata>time"`
+	XMLName   xml.Name `xml:"gpx"`
+	XMLNS     string   `xml:"xmlns,attr"`
+	XMLNSxsi  string   `xml:"xmlns:xsi,attr"`
+	XMLSchema string   `xml:"xsi:schemaLocation,attr"`
+	Creator   string   `xml:"creator,attr"`
+	Version   string   `xml:"version,attr"`
 
-	Name   string  `xml:"trk>name"`
-	Points []Trkpt `xml:"trk>trkseg>trkpt"`
+	Time   time.Time `xml:"metadata>time"`
+	Name   string    `xml:"trk>name"`
+	Points []Trkpt   `xml:"trk>trkseg>trkpt"`
 }
 
 type Trkpt struct {
-	Lat     float32   `xml:"lat,attr"`
-	Lon     float32   `xml:"lon,attr"`
-	Ele     float32   `xml:"ele"`
-	Time    time.Time `xml:"time"`
-	HR      int64     `xml:"extensions>heartrate,omitempty"`
-	Cadence int64     `xml:"extensions>cadence,omitempty"`
+	Lat  float32   `xml:"lat,attr"`
+	Lon  float32   `xml:"lon,attr"`
+	Ele  float32   `xml:"ele"`
+	Time time.Time `xml:"time"`
+
+	// Heartrate and cadence are stored in extensions
+	// and may be empty.
+	HR      int64 `xml:"extensions>heartrate,omitempty"`
+	Cadence int64 `xml:"extensions>cadence,omitempty"`
 }
 
 var point = Trkpt{
@@ -58,11 +65,17 @@ func NewGPX(name string, t time.Time, pts []Trkpt) GPX {
 }
 
 func main() {
+	var dst io.Writer = os.Stdout
+
+	flag.Parse()
+	if *compressed {
+		zdst := gzip.NewWriter(dst)
+		defer zdst.Close()
+		dst = io.Writer(zdst)
+	}
+
 	doc := NewGPX("Joyride", time.Now(), []Trkpt{point})
 
-	//dst := gzip.NewWriter(os.Stdout)
-	dst := os.Stdout
-	defer dst.Close()
 	dst.Write([]byte(xml.Header))
 	enc := xml.NewEncoder(dst)
 	enc.Indent("", "    ")
