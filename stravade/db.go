@@ -8,7 +8,7 @@ import (
 
 const TRACKSQL = `
 	select time, latitude, longitude, elevation, heartrate, cadence
-	from points
+	from trackpoints
 	where track = ?
 	order by time
 `
@@ -25,10 +25,20 @@ func GetTrackpoints(db *sql.DB, id int) ([]Trkpt, error) {
 
 	for rows.Next() {
 		var t Trkpt
-		rows.Scan(&t.Time.Time,
+		var hr, cadence sql.NullInt64
+
+		err = rows.Scan(&t.Time.Time,
 			&t.Lat, &t.Lon, &t.Ele,
-			&t.HR, &t.Cadence)
+			&hr, &cadence)
+
+		if err != nil {
+			return points, err
+		}
+		t.HR = hr.Int64
+		t.Cadence = cadence.Int64
+
 		points = append(points, t)
+
 	}
 	return points, rows.Err()
 }
