@@ -7,7 +7,15 @@ import (
 
 const (
 	DB_INIT = []string{
-		"create table xxx",
+	`CREATE TABLE trackpoints (
+		time      TIMESTAMP NOT NULL,
+		latitude  REAL NOT NULL,
+		longitude REAL NOT NULL,
+		elevation REAL NOT NULL,
+		heartrate INTEGER,
+		cadence   INTEGER,
+		track     INTEGER NOT NULL REFERENCES tracks(ROWID)
+	)`,
 		"create table yyy",
 		"create table zzz",
 	}
