@@ -18,6 +18,7 @@ type GPX struct {
 
 	Time   GPXTime `xml:"metadata>time"`
 	Name   string  `xml:"trk>name"`
+	// TODO: Consider a nested struct here?
 	Points []Trkpt `xml:"trk>trkseg>trkpt"`
 }
 
@@ -33,6 +34,7 @@ type Trkpt struct {
 	Cadence int64 `xml:"extensions>cadence,omitempty"`
 }
 
+// TODO: Kanssa SQL Scan?
 type GPXTime struct {
 	time.Time
 }
