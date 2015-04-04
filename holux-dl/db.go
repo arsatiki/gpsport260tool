@@ -35,9 +35,37 @@ func initialize(db *sql.DB) error {
 	return nil
 }
 
-func saveTrack(db *sql.DB, t holux.Track) error {
-	// write metadata
-	// insert tracks
-	// insert POIs
+// insert POIs
+
+func saveTrack(tx *sql.Tx, t holux.Index) error {
+	// TODO: Insert track index
+	return nil
+}
+
+func savePoints(tx *sql.Tx, t holux.Track, index int64) error {
+	writePoint, err := tx.Prepare(INSERT["trackpoint"])
+
+	if err != nil {
+		return err
+	}
+
+	for _, point := range t {
+		hr := sql.NullInt64{Int64: int64(point.HR), Valid: point.HR != 0}
+		cd := sql.NullInt64{Valid: false}
+
+		_, err := writePoint.Exec(index, point.Time(),
+			point.Lat, point.Lon, point.Height,
+			hr, cd)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func savePOIs(tx *sql.Tx, POIs []holux.Trackpoint) error {
+	// TODO write pois
 	return nil
 }
