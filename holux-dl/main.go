@@ -32,3 +32,7 @@ func main() {
 		}
 	}
 }
+
+func init() {
+	// TODO: Prepare SQL queries.
+}

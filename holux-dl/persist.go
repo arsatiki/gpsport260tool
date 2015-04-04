@@ -1,37 +1,23 @@
 package main
 
 import (
+	"holux"
 	"database/sql"
-	"github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-const (
-	DB_INIT = []string{
-	`CREATE TABLE trackpoints (
-		time      TIMESTAMP NOT NULL,
-		latitude  REAL NOT NULL,
-		longitude REAL NOT NULL,
-		elevation REAL NOT NULL,
-		heartrate INTEGER,
-		cadence   INTEGER,
-		track     INTEGER NOT NULL REFERENCES tracks(ROWID)
-	)`,
-		"create table yyy",
-		"create table zzz",
-	}
-	WRITE_TRACK = "insert into ... values ..."
-	WRITE_POI   = "insert into ... values ..."
-	WRITE_POINT = "insert into ... values ..."
-)
+//go:generate awk -f generate.awk setup.sql
 
 func initialize(db *sql.DB) error {
+	// check if exists.
+	// prepare all insert statements?
 	return nil
 }
 
-func saveTrack(db *sql.DB, t Track) error {
+func saveTrack(db *sql.DB, t holux.Track) error {
 	// write metadata
 	// insert tracks
 	// insert POIs
+	return nil
 }
 
-// TODO: Prepare queries
