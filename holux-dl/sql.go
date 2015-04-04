@@ -7,7 +7,7 @@ const (
 
 var (
 	CREATE_TABLE = map[string]string{
-		"trackpoints":        `CREATE TABLE trackpoints ( time      TIMESTAMP NOT NULL, latitude  REAL NOT NULL, longitude REAL NOT NULL, elevation REAL NOT NULL, heartrate INTEGER, cadence   INTEGER, track     INTEGER NOT NULL REFERENCES tracks(ROWID) );`,
+		"trackpoints":        `CREATE TABLE trackpoints ( track     INTEGER NOT NULL REFERENCES tracks(ROWID), time      TIMESTAMP NOT NULL, latitude  REAL NOT NULL, longitude REAL NOT NULL, elevation REAL NOT NULL, heartrate INTEGER, cadence   INTEGER );`,
 		"uploads":            `CREATE TABLE uploads ( track INTEGER NOT NULL REFERENCES tracks(ROWID), url   TEXT );`,
 		"points_of_interest": `CREATE TABLE points_of_interest ( time        TIMESTAMP NOT NULL, latitude    REAL NOT NULL, longitude   REAL NOT NULL, description TEXT );`,
 		"tracks":             `CREATE TABLE tracks ( time     TIMESTAMP NOT NULL, name     TEXT,  distance INTEGER NOT NULL,  duration INTEGER NOT NULL  );`,

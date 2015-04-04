@@ -11,13 +11,13 @@ CREATE TABLE tracks (
 
 -- CREATE_TABLE trackpoints
 CREATE TABLE trackpoints (
+    track     INTEGER NOT NULL REFERENCES tracks(ROWID),
     time      TIMESTAMP NOT NULL,
     latitude  REAL NOT NULL,
     longitude REAL NOT NULL,
     elevation REAL NOT NULL,
     heartrate INTEGER,
-    cadence   INTEGER,
-    track     INTEGER NOT NULL REFERENCES tracks(ROWID)
+    cadence   INTEGER
 );
 
 -- CREATE_TABLE uploads
