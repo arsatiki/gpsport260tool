@@ -5,6 +5,10 @@ function clean(line) {
         return substr(line, RLENGTH + 1, length(line) - RLENGTH)
 }
 
+function concat(a, b) {
+        return (length(a) > 0? a " ": "") clean(b)
+}
+
 BEGIN {
         if (OUT == "")
                 OUT = "sql.go";
@@ -21,11 +25,11 @@ $1 == "--" && NF == 3 {
 }
 
 mode == "const" {
-        consts[n] = consts[n] " " clean($0)
+        consts[n] = concat(consts[n], $0)
 }
 
 mode == "array" {
-        varkeys[n,k] = varkeys[n,k] " " clean($0)
+        varkeys[n,k] = concat(varkeys[n,k], $0)
 }
 
 END {
