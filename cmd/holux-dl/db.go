@@ -2,8 +2,9 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"holux"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 //go:generate awk -f generate.awk setup.sql
@@ -14,17 +15,21 @@ var (
 	}
 )
 
-func initialize(db *sql.DB) error {
+func initialize(db *sql.DB, err error) error {
 	var name string
 
+	if err != nil {
+		return err
+	}
+
 	// TODO: supported by Snow Lep?
-	_, err := db.Exec("PRAGMA foreign_keys = ON")
+	_, err = db.Exec("PRAGMA foreign_keys = ON")
 	if err != nil {
 		return err
 	}
 
 	for _, table := range TABLES {
-		err := db.QueryRow(NEEDS_INIT, table).Scan(&name)
+		err = db.QueryRow(NEEDS_INIT, table).Scan(&name)
 		switch {
 		case err == nil:
 			continue
@@ -43,42 +48,60 @@ func initialize(db *sql.DB) error {
 
 // insert POIs
 
-func saveTrack(tx *sql.Tx, t holux.Index) error {
-	// TODO: Insert track index
-	return nil
+func saveTrack(tx *sql.Tx, t holux.Index, err error) (int64, error) {
+	if err != nil {
+		return 0, err
+	}
+
+	trackname := sql.NullString{
+		String: t.Name(),
+		Valid:  t.IsNameSet(),
+	}
+
+	res, err := tx.Exec(INSERT["track"], t.Time(), trackname,
+		t.Distance, t.Duration)
+
+	if err != nil {
+		return 0, err
+	}
+
+	trackID, err := res.LastInsertId()
+	return trackID, err
 }
 
-func savePoints(tx *sql.Tx, t holux.Track, trackID int64) error {
-	writePoint, err := tx.Prepare(INSERT["trackpoint"])
+func savePoints(tx *sql.Tx, t holux.Track, trackID int64, err error) error {
+	if err != nil {
+		return err
+	}
+
+	insertPoint, err := tx.Prepare(INSERT["trackpoint"])
 
 	if err != nil {
 		return err
 	}
 
 	for _, point := range t {
-		hr := sql.NullInt64{Int64: int64(point.HR), Valid: point.HR != 0}
-		cd := sql.NullInt64{Valid: false}
+		if !point.IsPOI() {
+			hr := sql.NullInt64{
+				Int64: int64(point.HR),
+				Valid: point.HR != 0,
+			}
+			// TODO fix cadences
+			cd := sql.NullInt64{Valid: false}
 
-		_, err := writePoint.Exec(trackID, point.Time(),
-			point.Lat, point.Lon, point.Height,
-			hr, cd)
+			_, err = insertPoint.Exec(trackID, point.Time(),
+				point.Lat, point.Lon, point.Height,
+				hr, cd)
+			
+		} else {
+			_, err = tx.Exec(INSERT["POI"], trackID, point.Time(),
+				point.Lat, point.Lon)
+		}
 
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
-}
-
-func savePOIs(tx *sql.Tx, POIs []holux.Trackpoint, trackID int64) error {
-	for _, POI := range POIs {
-		_, err := tx.Exec(INSERT["POI"], trackID,
-			POI.Time(), POI.Lat, POI.Lon)
-
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
