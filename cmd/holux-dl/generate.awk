@@ -11,7 +11,7 @@ function concat(a, b) {
 
 BEGIN {
         if (OUT == "")
-                OUT = "sql.go";
+                OUT = "sql_const.go";
 }
 
 NF == 0 { next; }
