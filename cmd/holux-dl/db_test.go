@@ -15,7 +15,7 @@ func TestDBInit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = initialize(db)
+	err = initialize(db, err)
 	if err != nil {
 		t.Fatal(err)
 	}

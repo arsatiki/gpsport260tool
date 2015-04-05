@@ -11,31 +11,34 @@ CREATE TABLE tracks (
 
 -- CREATE_TABLE trackpoints
 CREATE TABLE trackpoints (
-    FOREIGN KEY(track) REFERENCES tracks(ROWID) NOT NULL
-                       ON DELETE CASCADE,
+    track     INTEGER NOT NULL,
     time      TIMESTAMP NOT NULL,
     latitude  REAL NOT NULL,
     longitude REAL NOT NULL,
     elevation REAL NOT NULL,
     heartrate INTEGER,
-    cadence   INTEGER
+    cadence   INTEGER,
+    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+                       ON DELETE CASCADE
 );
 
 -- CREATE_TABLE uploads
 CREATE TABLE uploads (
-    FOREIGN KEY(track) REFERENCES tracks(ROWID) NOT NULL
-                       ON DELETE CASCADE,
-    url   TEXT
+    track INTEGER NOT NULL,
+    url   TEXT,
+    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+                       ON DELETE CASCADE
 );
 
 -- CREATE_TABLE points_of_interest
 CREATE TABLE points_of_interest (
-    FOREIGN KEY(track) REFERENCES tracks(ROWID)
-                       ON DELETE SET NULL,
+    track       INTEGER,
     time        TIMESTAMP NOT NULL,
     latitude    REAL NOT NULL,
     longitude   REAL NOT NULL,
-    description TEXT
+    description TEXT,
+    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+                       ON DELETE SET NULL
 );
 
 -- INSERT track
