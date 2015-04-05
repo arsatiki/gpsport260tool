@@ -17,6 +17,12 @@ var (
 func initialize(db *sql.DB) error {
 	var name string
 
+	// TODO: supported by Snow Lep?
+	_, err := db.Exec("PRAGMA foreign_keys = ON")
+	if err != nil {
+		return err
+	}
+
 	for _, table := range TABLES {
 		err := db.QueryRow(NEEDS_INIT, table).Scan(&name)
 		switch {
@@ -42,7 +48,7 @@ func saveTrack(tx *sql.Tx, t holux.Index) error {
 	return nil
 }
 
-func savePoints(tx *sql.Tx, t holux.Track, index int64) error {
+func savePoints(tx *sql.Tx, t holux.Track, trackID int64) error {
 	writePoint, err := tx.Prepare(INSERT["trackpoint"])
 
 	if err != nil {
@@ -53,7 +59,7 @@ func savePoints(tx *sql.Tx, t holux.Track, index int64) error {
 		hr := sql.NullInt64{Int64: int64(point.HR), Valid: point.HR != 0}
 		cd := sql.NullInt64{Valid: false}
 
-		_, err := writePoint.Exec(index, point.Time(),
+		_, err := writePoint.Exec(trackID, point.Time(),
 			point.Lat, point.Lon, point.Height,
 			hr, cd)
 
@@ -65,7 +71,14 @@ func savePoints(tx *sql.Tx, t holux.Track, index int64) error {
 	return nil
 }
 
-func savePOIs(tx *sql.Tx, POIs []holux.Trackpoint) error {
-	// TODO write pois
+func savePOIs(tx *sql.Tx, POIs []holux.Trackpoint, trackID int64) error {
+	for _, POI := range POIs {
+		_, err := tx.Exec(INSERT["POI"], trackID,
+			POI.Time(), POI.Lat, POI.Lon)
+
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

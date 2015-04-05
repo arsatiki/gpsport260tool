@@ -11,7 +11,8 @@ CREATE TABLE tracks (
 
 -- CREATE_TABLE trackpoints
 CREATE TABLE trackpoints (
-    track     INTEGER NOT NULL REFERENCES tracks(ROWID),
+    FOREIGN KEY(track) REFERENCES tracks(ROWID) NOT NULL
+                       ON DELETE CASCADE,
     time      TIMESTAMP NOT NULL,
     latitude  REAL NOT NULL,
     longitude REAL NOT NULL,
@@ -22,12 +23,15 @@ CREATE TABLE trackpoints (
 
 -- CREATE_TABLE uploads
 CREATE TABLE uploads (
-    track INTEGER NOT NULL REFERENCES tracks(ROWID),
+    FOREIGN KEY(track) REFERENCES tracks(ROWID) NOT NULL
+                       ON DELETE CASCADE,
     url   TEXT
 );
 
 -- CREATE_TABLE points_of_interest
 CREATE TABLE points_of_interest (
+    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+                       ON DELETE SET NULL,
     time        TIMESTAMP NOT NULL,
     latitude    REAL NOT NULL,
     longitude   REAL NOT NULL,
@@ -39,7 +43,7 @@ INSERT INTO tracks(time, name, distance, duration)
        VALUES (?, ?, ?, ?);
 
 -- INSERT POI
-INSERT INTO points_of_interest(time, latitude, longitude)
+INSERT INTO points_of_interest(track, time, latitude, longitude)
        VALUES (?, ?, ?);
 
 -- INSERT trackpoint
