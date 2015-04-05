@@ -14,7 +14,7 @@ const (
 )
 
 type Trackpoint struct {
-	TimeMKT  uint32
+	RawTime  MTKTime
 	Lat      float32 // North Positive
 	Lon      float32 // East Positive
 	Height   uint16
@@ -35,7 +35,7 @@ func (t Trackpoint) IsPOI() bool {
 }
 
 func (t Trackpoint) Time() time.Time {
-	return time.Unix(int64(t.TimeMKT)+Y2000, 0)
+	return t.RawTime.Value()
 }
 
 // TODO: Add more fields, perhaps?
@@ -66,15 +66,17 @@ func fmtCoordinate(v float32, pos, neg string) string {
 // |--size---| |smx| |sav| |cal|             HM HA
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
 type Index struct {
-	F00F     [4]byte // TODO double check
-	Name     [10]byte
-	Unk      [2]byte // First byte can be \0 for C strings
-	TimeMKT  uint32  // MKTTime
-	Duration uint32  // seconds
-	Distance uint32  // meters
-	Offset   uint32  // LIST_MEM_START_OFFSET=28
-	Size     uint32  // LIST_MEM_LENGTH_OFFSET=32 What's the diff with Length?
-	SpeedMax uint16  // 35.6 km/h = 356.
+	F00F        [4]byte // TODO double check
+	RawName     [10]byte
+	Unk         [2]byte // First byte can be \0 for C strings
+	RawTime     MTKTime // MKTTime
+	RawDuration uint32  // seconds
+	Distance    uint32  // meters
+
+	Offset uint32 // LIST_MEM_START_OFFSET=28
+	Size   uint32 // LIST_MEM_LENGTH_OFFSET=32
+
+	SpeedMax uint16 // 35.6 km/h = 356.
 	SpeedAvg uint16
 	Calories uint16
 	Unk1     [4]byte
@@ -83,8 +85,27 @@ type Index struct {
 	Unk2     [16]byte
 }
 
+func (i Index) Name() string {
+	if i.IsNameSet() {
+		return string(i.RawName[:])
+	}
+	return ""
+}
+
+func (i Index) IsNameSet() bool {
+	return i.RawName[0] != 0
+}
+
+func (i Index) Duration() time.Duration {
+	return time.Duration(i.RawDuration) * time.Second
+}
+
+func (i Index) Time() time.Time {
+	return i.RawTime.Value()
+}
+
 func (i Index) String() string {
-	s := `[FF0000FF: %02x] [Name: % 02x] [Unk: %02x]
+	s := `[FF0000FF: %02x] [Name: % 02x (%s)] [Unk: %02x]
 	Time: %v: Distance: %d m, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
 	SPDMAX: %.1f km/h, SPDAVG: %.1f km/h, CAL: %d
@@ -92,11 +113,17 @@ func (i Index) String() string {
 	HRMMax: %d, HRMAvg: %d
 	[% 02x]
 	`
-	return fmt.Sprintf(s, i.F00F, i.Name, i.Unk,
-		time.Unix(int64(i.TimeMKT)+Y2000, 0), i.Distance, time.Duration(i.Duration)*time.Second,
+	return fmt.Sprintf(s, i.F00F, i.RawName, i.Name(), i.Unk,
+		i.Time(), i.Distance, i.Duration(),
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
 		i.Unk1,
 		i.HRMMax, i.HRMAvg,
 		i.Unk2)
+}
+
+type MTKTime uint32
+
+func (t MTKTime) Value() time.Time {
+	return time.Unix(int64(t)+Y2000, 0)
 }
