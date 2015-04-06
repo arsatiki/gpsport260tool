@@ -3,11 +3,12 @@ SELECT name FROM sqlite_master WHERE type='table' and name=?;
 
 -- CREATE_TABLE tracks
 CREATE TABLE tracks (
-    id       INTEGER PRIMARY KEY,
-    time     TIMESTAMP NOT NULL,
-    name     TEXT, --XXX
-    distance INTEGER NOT NULL, -- in meters
-    duration INTEGER NOT NULL -- in seconds,
+    id   INTEGER PRIMARY KEY,
+    time TIMESTAMP NOT NULL,
+    name TEXT, --XXX
+
+    "distance/m" INTEGER NOT NULL, -- in meters
+    "duration/s" INTEGER NOT NULL -- in seconds,
 );
 
 -- CREATE_TABLE trackpoints
@@ -16,10 +17,13 @@ CREATE TABLE trackpoints (
     time      TIMESTAMP NOT NULL,
     latitude  REAL NOT NULL,
     longitude REAL NOT NULL,
-    elevation REAL NOT NULL, -- corresponds to alt
-    height    REAL NOT NULL, -- corresponds to height
-    heartrate INTEGER,
-    cadence   INTEGER,
+
+    "elevation/m" REAL NOT NULL, -- corresponds to alt
+    "height/m"    REAL NOT NULL, -- corresponds to height
+
+    "heartrate/bpm" INTEGER,
+    "cadence/rpm"   INTEGER,
+
     FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
@@ -44,7 +48,7 @@ CREATE TABLE points_of_interest (
 );
 
 -- INSERT track
-INSERT INTO tracks(time, name, distance, duration) 
+INSERT INTO tracks(time, name, "distance/m", "duration/s")
        VALUES (?, ?, ?, ?);
 
 -- INSERT POI
@@ -52,7 +56,8 @@ INSERT INTO points_of_interest(track, time, latitude, longitude)
        VALUES (?, ?, ?, ?);
 
 -- INSERT trackpoint
-INSERT INTO trackpoints(track, time, latitude, longitude, elevation, height,
-                        heartrate, cadence)
+INSERT INTO trackpoints(track, time, latitude, longitude,
+                        "elevation/m", "height/m",
+                        "heartrate/bpm", "cadence/rpm")
        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
