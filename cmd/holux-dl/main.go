@@ -29,8 +29,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Got error %v, arborting", err)
 	}
-
 	for k, track := range index {
+		log.Println(track)
+
 		points, err := c.GetTrack(track.Offset, track.Size)
 		if err != nil {
 			log.Fatal("Got error %v while reading track %d", err, k)
@@ -38,7 +39,6 @@ func main() {
 
 		tx, err := db.Begin()
 		trackID, err := saveTrack(tx, track, err)
-		log.Println("TrackID is", trackID)
 		err = savePoints(tx, points, trackID, err)
 
 		if err != nil {
