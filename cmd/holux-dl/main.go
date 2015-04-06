@@ -38,11 +38,12 @@ func main() {
 
 		tx, err := db.Begin()
 		trackID, err := saveTrack(tx, track, err)
+		log.Println("TrackID is", trackID)
 		err = savePoints(tx, points, trackID, err)
 
 		if err != nil {
 			tx.Rollback()
-			log.Fatalf("Got error while reading track %d:", k, err)
+			log.Fatalf("Got error while writing track %d:", k, err)
 		}
 		tx.Commit()
 	}
