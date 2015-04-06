@@ -87,7 +87,7 @@ func savePoints(tx *sql.Tx, t holux.Track, trackID int64, err error) error {
 		if !point.IsPOI() {
 			hr := sql.NullInt64{
 				Int64: int64(point.HR),
-				Valid: point.HR != 0,
+				Valid: point.HasHR(),
 			}
 			// TODO fix cadences
 			cd := sql.NullInt64{Valid: false}

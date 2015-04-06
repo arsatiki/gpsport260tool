@@ -1,7 +1,6 @@
 package holux
 
 import (
-	"bytes"
 	"fmt"
 	"time"
 )
@@ -12,6 +11,16 @@ const (
 	INDEXSIZE = 64
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
+
+// Flags:
+// 0x01 ? often set
+// 0x02 ? rarely set
+// 0x04 ? often set
+// 0x08 ? sometimes set, when 0x04 isn't
+// 0x10 POI
+// 0x20 Heartrate present
+// 0x40 ? never seen
+// 0x80 ? never seen
 
 type Trackpoint struct {
 	RawTime  MTKTime
@@ -31,7 +40,11 @@ type Trackpoint struct {
 type Track []Trackpoint
 
 func (t Trackpoint) IsPOI() bool {
-	return t.Flags&0x10 == 1
+	return t.Flags&0x10 != 0
+}
+
+func (t Trackpoint) HasHR() bool {
+	return t.Flags&0x20 != 0
 }
 
 func (t Trackpoint) Time() time.Time {
@@ -40,13 +53,15 @@ func (t Trackpoint) Time() time.Time {
 
 // TODO: Add more fields, perhaps?
 func (t Trackpoint) String() string {
-	var out bytes.Buffer
-
-	fmt.Fprintf(&out, t.Time().Format(TRKPTTIME))
-	fmt.Fprintf(&out, " %s, %s",
-		fmtCoordinate(t.Lat, "N", "S"),
-		fmtCoordinate(t.Lon, "E", "W"))
-	return out.String()
+	return fmt.Sprintf(`TRKPT: %s %s, %s
+		Height: %d m, Speed: %.1f m/s, Flags: %02x,
+		HR: %d, Alt: %d m, Heading: %d, Distance: %d m
+		
+		`, t.Time().Format(TRKPTTIME),
+		fmtCoordinate(t.Lat, "N", "S"), fmtCoordinate(t.Lon, "E", "W"),
+		t.Height, float32(t.Speed)/10, t.Flags,
+		t.HR, t.Alt, t.Heading, t.Distance,
+	)
 }
 
 func fmtCoordinate(v float32, pos, neg string) string {

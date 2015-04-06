@@ -36,6 +36,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Got error %v while reading track %d", err, k)
 		}
+		log.Println(points)
 
 		tx, err := db.Begin()
 		trackID, err := saveTrack(tx, track, err)
