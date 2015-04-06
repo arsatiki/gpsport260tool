@@ -63,7 +63,7 @@ func (c Client) GetIndex() ([]Index, error) {
 	c.Send("PHLX701")
 	err := c.Receivef("PHLX601,%d", &count)
 	if err != nil {
-		log.Println("Received error: ", err)
+		log.Fatal("Received error: ", err)
 	}
 
 	c.Sendf("PHLX702,0,%d", count)
