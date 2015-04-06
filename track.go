@@ -17,12 +17,12 @@ type Trackpoint struct {
 	RawTime  MTKTime
 	Lat      float32 // North Positive
 	Lon      float32 // East Positive
-	Height   uint16
+	Height   int16
 	Speed    uint16
 	_        byte
 	Flags    byte
 	HR       uint16
-	Alt      uint16
+	Alt      int16
 	Heading  uint16
 	Distance uint32
 	_        uint32 // Cadence?
