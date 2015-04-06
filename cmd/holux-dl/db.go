@@ -9,8 +9,8 @@ import (
 
 //go:generate awk -f generate.awk setup.sql
 
-// TODO: Duration gets stored as nanoseconds
-// TODO: Names still stored as \0\0\0\0...
+// TODO: Create indexes for foreign keys
+// TODO: Needs an insert test
 
 var (
 	TABLES = []string{
@@ -62,7 +62,7 @@ func saveTrack(tx *sql.Tx, t holux.Index, err error) (int64, error) {
 	}
 
 	res, err := tx.Exec(INSERT["track"], t.Time(), trackname,
-		t.Distance, t.Duration())
+		t.Distance, t.RawDuration)
 
 	if err != nil {
 		return 0, err
