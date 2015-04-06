@@ -3,6 +3,7 @@ SELECT name FROM sqlite_master WHERE type='table' and name=?;
 
 -- CREATE_TABLE tracks
 CREATE TABLE tracks (
+    id       INTEGER PRIMARY KEY,
     time     TIMESTAMP NOT NULL,
     name     TEXT, --XXX
     distance INTEGER NOT NULL, -- in meters
@@ -18,7 +19,7 @@ CREATE TABLE trackpoints (
     elevation REAL NOT NULL,
     heartrate INTEGER,
     cadence   INTEGER,
-    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+    FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
 
@@ -26,7 +27,7 @@ CREATE TABLE trackpoints (
 CREATE TABLE uploads (
     track INTEGER NOT NULL,
     url   TEXT,
-    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+    FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
 
@@ -37,7 +38,7 @@ CREATE TABLE points_of_interest (
     latitude    REAL NOT NULL,
     longitude   REAL NOT NULL,
     description TEXT,
-    FOREIGN KEY(track) REFERENCES tracks(ROWID)
+    FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE SET NULL
 );
 
