@@ -60,13 +60,16 @@ func fmtCoordinate(v float32, pos, neg string) string {
 }
 
 // FF 00 00 FF FF FF FF FF FF FF FF FF FF FF FF FF
+//          01 jos favourite, muuten FF
 // 52 08 B6 17 FD 0B 00 00 3F 04 00 00 00 00 00 00
 // |--time---|             |distance-| |-offset--|
 // 37 00 00 00 47 00 0C 00 2E 00 02 00 02 00 00 00
 // |--size---| |smx| |sav| |cal|             HM HA
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
+// [pois] ?? ]
 type Index struct {
-	F00F        [4]byte // TODO double check
+	F00         [3]byte // TODO double check
+	UnkFlag     byte    // FF when not favourite, 01 when fav
 	RawName     [10]byte
 	Unk         [2]byte // First byte can be \0 for C strings
 	RawTime     MTKTime // MKTTime
@@ -79,10 +82,12 @@ type Index struct {
 	SpeedMax uint16 // 35.6 km/h = 356.
 	SpeedAvg uint16
 	Calories uint16
-	Unk1     [4]byte
-	HRMMax   byte // BPM
+	Unk1     [2]byte
+	CO2      uint16 // hectograms. 1 hg = 100 g
+	HRMMax   byte   // BPM
 	HRMAvg   byte
-	Unk2     [16]byte
+	POIs     byte // Can be uint16 or 32 as well.
+	Unk2     [15]byte
 }
 
 func (i Index) Name() string {
@@ -93,7 +98,7 @@ func (i Index) Name() string {
 }
 
 func (i Index) IsNameSet() bool {
-	return i.RawName[0] != 0
+	return i.RawName[0] != 0xff
 }
 
 func (i Index) Duration() time.Duration {
@@ -104,20 +109,26 @@ func (i Index) Time() time.Time {
 	return i.RawTime.Value()
 }
 
+func (i Index) IsFavorite() bool {
+	return i.UnkFlag == 0x01
+}
+
 func (i Index) String() string {
-	s := `[FF0000FF: %02x] [Name: % 02x (%s)] [Unk: %02x]
+	s := `[FF0000: %02x] Favorite: %v [Name: % 02x (%s)] [Unk: %02x]
 	Time: %v: Distance: %d m, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
 	SPDMAX: %.1f km/h, SPDAVG: %.1f km/h, CAL: %d
 	[% 02x]
+	CO2 %.1f kg
 	HRMMax: %d, HRMAvg: %d
-	[% 02x]
+	[% 02x] (starts with # of POIs, length?)
 	`
-	return fmt.Sprintf(s, i.F00F, i.RawName, i.Name(), i.Unk,
+	return fmt.Sprintf(s, i.F00, i.IsFavorite(), i.RawName, i.Name(), i.Unk,
 		i.Time(), i.Distance, i.Duration(),
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
 		i.Unk1,
+		float32(i.CO2)/10,
 		i.HRMMax, i.HRMAvg,
 		i.Unk2)
 }
