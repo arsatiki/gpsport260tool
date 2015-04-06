@@ -16,7 +16,8 @@ CREATE TABLE trackpoints (
     time      TIMESTAMP NOT NULL,
     latitude  REAL NOT NULL,
     longitude REAL NOT NULL,
-    elevation REAL NOT NULL,
+    elevation REAL NOT NULL, -- corresponds to alt
+    height    REAL NOT NULL, -- corresponds to height
     heartrate INTEGER,
     cadence   INTEGER,
     FOREIGN KEY(track) REFERENCES tracks(id)
@@ -48,10 +49,10 @@ INSERT INTO tracks(time, name, distance, duration)
 
 -- INSERT POI
 INSERT INTO points_of_interest(track, time, latitude, longitude)
-       VALUES (?, ?, ?);
+       VALUES (?, ?, ?, ?);
 
 -- INSERT trackpoint
-INSERT INTO trackpoints(track, time, latitude, longitude, elevation,
+INSERT INTO trackpoints(track, time, latitude, longitude, elevation, height,
                         heartrate, cadence)
-       VALUES (?, ?, ?);
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 

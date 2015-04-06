@@ -7,14 +7,14 @@ const (
 
 var (
 	CREATE_TABLE = map[string]string{
-		"trackpoints":        `CREATE TABLE trackpoints ( track     INTEGER NOT NULL, time      TIMESTAMP NOT NULL, latitude  REAL NOT NULL, longitude REAL NOT NULL, elevation REAL NOT NULL, heartrate INTEGER, cadence   INTEGER, FOREIGN KEY(track) REFERENCES tracks(ROWID) ON DELETE CASCADE );`,
-		"uploads":            `CREATE TABLE uploads ( track INTEGER NOT NULL, url   TEXT, FOREIGN KEY(track) REFERENCES tracks(ROWID) ON DELETE CASCADE );`,
-		"points_of_interest": `CREATE TABLE points_of_interest ( track       INTEGER, time        TIMESTAMP NOT NULL, latitude    REAL NOT NULL, longitude   REAL NOT NULL, description TEXT, FOREIGN KEY(track) REFERENCES tracks(ROWID) ON DELETE SET NULL );`,
-		"tracks":             `CREATE TABLE tracks ( time     TIMESTAMP NOT NULL, name     TEXT,  distance INTEGER NOT NULL,  duration INTEGER NOT NULL  );`,
+		"trackpoints": `CREATE TABLE trackpoints ( track     INTEGER NOT NULL, time      TIMESTAMP NOT NULL, latitude  REAL NOT NULL, longitude REAL NOT NULL, elevation REAL NOT NULL,  height    REAL NOT NULL,  heartrate INTEGER, cadence   INTEGER, FOREIGN KEY(track) REFERENCES tracks(id) ON DELETE CASCADE );`,
+		"uploads": `CREATE TABLE uploads ( track INTEGER NOT NULL, url   TEXT, FOREIGN KEY(track) REFERENCES tracks(id) ON DELETE CASCADE );`,
+		"points_of_interest": `CREATE TABLE points_of_interest ( track       INTEGER, time        TIMESTAMP NOT NULL, latitude    REAL NOT NULL, longitude   REAL NOT NULL, description TEXT, FOREIGN KEY(track) REFERENCES tracks(id) ON DELETE SET NULL );`,
+		"tracks": `CREATE TABLE tracks ( id       INTEGER PRIMARY KEY, time     TIMESTAMP NOT NULL, name     TEXT,  distance INTEGER NOT NULL,  duration INTEGER NOT NULL  );`,
 	}
 	INSERT = map[string]string{
-		"POI":        `INSERT INTO points_of_interest(track, time, latitude, longitude) VALUES (?, ?, ?);`,
-		"trackpoint": `INSERT INTO trackpoints(track, time, latitude, longitude, elevation, heartrate, cadence) VALUES (?, ?, ?);`,
-		"track":      `INSERT INTO tracks(time, name, distance, duration)  VALUES (?, ?, ?, ?);`,
+		"POI": `INSERT INTO points_of_interest(track, time, latitude, longitude) VALUES (?, ?, ?, ?);`,
+		"trackpoint": `INSERT INTO trackpoints(track, time, latitude, longitude, elevation, height, heartrate, cadence) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+		"track": `INSERT INTO tracks(time, name, distance, duration)  VALUES (?, ?, ?, ?);`,
 	}
 )

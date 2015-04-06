@@ -9,6 +9,9 @@ import (
 
 //go:generate awk -f generate.awk setup.sql
 
+// TODO: Duration gets stored as nanoseconds
+// TODO: Names still stored as \0\0\0\0...
+
 var (
 	TABLES = []string{
 		"tracks", "trackpoints", "points_of_interest", "uploads",
@@ -59,7 +62,7 @@ func saveTrack(tx *sql.Tx, t holux.Index, err error) (int64, error) {
 	}
 
 	res, err := tx.Exec(INSERT["track"], t.Time(), trackname,
-		t.Distance, t.Duration)
+		t.Distance, t.Duration())
 
 	if err != nil {
 		return 0, err
@@ -90,9 +93,9 @@ func savePoints(tx *sql.Tx, t holux.Track, trackID int64, err error) error {
 			cd := sql.NullInt64{Valid: false}
 
 			_, err = insertPoint.Exec(trackID, point.Time(),
-				point.Lat, point.Lon, point.Height,
+				point.Lat, point.Lon, point.Alt, point.Height,
 				hr, cd)
-			
+
 		} else {
 			_, err = tx.Exec(INSERT["POI"], trackID, point.Time(),
 				point.Lat, point.Lon)
