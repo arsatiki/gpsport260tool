@@ -8,7 +8,9 @@ CREATE TABLE tracks (
     name TEXT, --XXX
 
     "distance/m" INTEGER NOT NULL, -- in meters
-    "duration/s" INTEGER NOT NULL -- in seconds,
+    "duration/s" INTEGER NOT NULL, -- in seconds
+
+    unknown TEXT
 );
 
 -- CREATE_TABLE trackpoints
@@ -54,8 +56,8 @@ CREATE TABLE points_of_interest (
 CREATE INDEX POIsindex ON points_of_interest(track);
 
 -- INSERT track
-INSERT INTO tracks(time, name, "distance/m", "duration/s")
-       VALUES (?, ?, ?, ?);
+INSERT INTO tracks(time, name, "distance/m", "duration/s", unknown)
+       VALUES (?, ?, ?, ?, ?);
 
 -- INSERT POI
 INSERT INTO points_of_interest(track, time, latitude, longitude)

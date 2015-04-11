@@ -62,7 +62,7 @@ func saveTrack(tx *sql.Tx, t holux.Index, err error) (int64, error) {
 	}
 
 	res, err := tx.Exec(INSERT["track"], t.Time(), trackname,
-		t.Distance, t.RawDuration)
+		t.Distance, t.RawDuration, t.UnknownFields())
 
 	if err != nil {
 		return 0, err

@@ -130,6 +130,11 @@ func (i Index) IsFavorite() bool {
 	return i.UnkFlag == 0x01
 }
 
+func (i Index) UnknownFields() string {
+	f := "F00 %02x|UnkFlag %02x|Unk %02x|Unk1 %02x|Unk2 %02x"
+	return fmt.Sprintf(f, i.F00, i.UnkFlag, i.Unk, i.Unk1, i.Unk2)
+}
+
 func (i Index) String() string {
 	s := `[FF0000: %02x] Favorite: %v [Name: % 02x (%s)] [Unk: %02x]
 	Time: %v: Distance: %d m, Duration: %v
