@@ -27,6 +27,8 @@ CREATE TABLE trackpoints (
     FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
+-- CREATE_INDEX trackpoints
+CREATE INDEX trackpointindex ON trackpoints(track);
 
 -- CREATE_TABLE uploads
 CREATE TABLE uploads (
@@ -35,6 +37,8 @@ CREATE TABLE uploads (
     FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
+-- CREATE_INDEX uploads
+CREATE INDEX uploadsindex ON uploads(track);
 
 -- CREATE_TABLE points_of_interest
 CREATE TABLE points_of_interest (
@@ -46,6 +50,8 @@ CREATE TABLE points_of_interest (
     FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE SET NULL
 );
+-- CREATE_INDEX points_of_interest
+CREATE INDEX POIsindex ON points_of_interest(track);
 
 -- INSERT track
 INSERT INTO tracks(time, name, "distance/m", "duration/s")
