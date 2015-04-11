@@ -50,6 +50,11 @@ func (t Trackpoint) HasHR() bool {
 	return t.Flags&FLAG_TRKPT_HR != 0
 }
 
+// TODO: Find out which flag controls cadence
+func (t Trackpoint) HasCadence() bool {
+	return false
+}
+
 func (t Trackpoint) Time() time.Time {
 	return t.RawTime.Value()
 }

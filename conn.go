@@ -61,7 +61,6 @@ func (c Conn) Receivef(format string, a ...interface{}) error {
 	return err
 }
 
-// TODO: All the information about n is carried by len(block)
 func (c Conn) ReadBlock(block []byte, checksum uint32) error {
 	h := NewHash()
 	src := io.TeeReader(c.rw, h)

@@ -11,7 +11,7 @@ Reading
 - [x] Skip too short segments while reading
 - [ ] Make the too-short criteria a flag
 - [ ] Clear log (with conf flag)
-- [ ] SQL Indices
+- [ ] Create SQL Indices for foreign keys
 - [x] Print out summaries of tracks with ID for easing upload
 - [ ] Refuse to download if track already exists
 
@@ -35,3 +35,10 @@ Later
 - Actually track the uploads at startup
 - Tool for clearing out old debug information (can be done manually first)
 - Normalize terminology (tracks vs trackpoints)
+- Refactor
+- Combine tracks that are close to each other
+
+Refactoring ideas
+-----------------
+
+- CRC computation

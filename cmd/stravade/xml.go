@@ -5,9 +5,7 @@ import (
 	"time"
 )
 
-// TODO:
-// Support for more than one trkseg? Mebbe. Mebbe not.
-
+// TODO: Support for more than one trkseg? Mebbe. Mebbe not.
 type GPX struct {
 	XMLName   xml.Name `xml:"gpx"`
 	XMLNS     string   `xml:"xmlns,attr"`

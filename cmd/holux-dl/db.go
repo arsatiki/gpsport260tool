@@ -8,8 +8,6 @@ import (
 )
 
 //go:generate awk -f generate.awk setup.sql
-
-// TODO: Create indexes for foreign keys
 // TODO: Needs an insert test
 
 var (
@@ -90,7 +88,10 @@ func savePoints(tx *sql.Tx, t holux.Track, trackID int64, err error) error {
 				Valid: point.HasHR(),
 			}
 			// TODO fix cadences
-			cd := sql.NullInt64{Valid: false}
+			cd := sql.NullInt64{
+				Int64: 0,
+				Valid: point.HasCadence(),
+			}
 
 			_, err = insertPoint.Exec(trackID, point.Time(),
 				point.Lat, point.Lon, point.Alt, point.Height,
