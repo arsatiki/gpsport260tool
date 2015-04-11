@@ -12,15 +12,17 @@ const (
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
 
-// Flags:
-// 0x01 ? often set
-// 0x02 ? rarely set
-// 0x04 ? often set
-// 0x08 ? sometimes set, when 0x04 isn't
-// 0x10 POI
-// 0x20 Heartrate present
-// 0x40 ? never seen
-// 0x80 ? never seen
+const (
+	FLAG_TRKPT_UNK1 = 1 << iota // 0x01 ? often set
+	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
+	FLAG_TRKPT_UNK3             // 0x04 ? often set
+	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
+	FLAG_TRKPT_POI              // 0x10 POI
+	FLAG_TRKPT_HR               // 0x20 Heartrate present
+	FLAG_TRKPT_UNK5             // 0x40 ? never seen
+	FLAG_TRKPT_UNK6             // 0x80 ? never seen
+	// Last two are probably cadence and speed
+)
 
 type Trackpoint struct {
 	RawTime  MTKTime
@@ -40,11 +42,11 @@ type Trackpoint struct {
 type Track []Trackpoint
 
 func (t Trackpoint) IsPOI() bool {
-	return t.Flags&0x10 != 0
+	return t.Flags&FLAG_TRKPT_POI != 0
 }
 
 func (t Trackpoint) HasHR() bool {
-	return t.Flags&0x20 != 0
+	return t.Flags&FLAG_TRKPT_HR != 0
 }
 
 func (t Trackpoint) Time() time.Time {
