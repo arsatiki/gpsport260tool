@@ -12,81 +12,6 @@ const (
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
 
-// Trackpoint flag field bit masks
-const (
-	FLAG_TRKPT_UNK1 = 1 << iota // 0x01 ? often set
-	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
-	FLAG_TRKPT_UNK3             // 0x04 ? often set
-	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
-	FLAG_TRKPT_POI              // 0x10 POI
-	FLAG_TRKPT_HR               // 0x20 Heartrate present
-	FLAG_TRKPT_UNK5             // 0x40 ? never seen
-	FLAG_TRKPT_UNK6             // 0x80 ? never seen
-	// Last two are probably cadence and speed
-)
-
-type Trackpoint struct {
-	RawTime  MTKTime
-	Lat      float32 // North Positive
-	Lon      float32 // East Positive
-	Height   int16
-	Speed    uint16
-	Unk1     byte
-	Flags    byte
-	HR       uint16
-	Alt      int16
-	Heading  uint16
-	Distance uint32
-	Unk2     uint32 // Cadence?
-}
-
-type Track []Trackpoint
-
-func (t Trackpoint) IsPOI() bool {
-	return t.Flags&FLAG_TRKPT_POI != 0
-}
-
-func (t Trackpoint) HasHR() bool {
-	return t.Flags&FLAG_TRKPT_HR != 0
-}
-
-// TODO: Find out which flag controls cadence
-func (t Trackpoint) HasCadence() bool {
-	return false
-}
-
-func (t Trackpoint) Time() time.Time {
-	return t.RawTime.Value()
-}
-
-func (t Trackpoint) UnknownFields() string {
-	f := "Unk1 %02x|Flags %02x|Unk2 %02x"
-	return fmt.Sprintf(f, t.Unk1, t.Flags, t.Unk2)
-}
-
-// TODO: Add more fields, perhaps?
-func (t Trackpoint) String() string {
-	return fmt.Sprintf(`TRKPT: %s %s, %s
-		Height: %d m, Speed: %.1f m/s, Flags: %02x,
-		HR: %d, Alt: %d m, Heading: %d, Distance: %d m
-		
-		`, t.Time().Format(TRKPTTIME),
-		fmtCoordinate(t.Lat, "N", "S"), fmtCoordinate(t.Lon, "E", "W"),
-		t.Height, float32(t.Speed)/10, t.Flags,
-		t.HR, t.Alt, t.Heading, t.Distance,
-	)
-}
-
-func fmtCoordinate(v float32, pos, neg string) string {
-	switch {
-	case v > 0:
-		return fmt.Sprintf("%0.5f °%s", v, pos)
-	case v < 0:
-		return fmt.Sprintf("%0.5f °%s", -v, neg)
-	}
-	return "0 °"
-}
-
 // FF 00 00 FF FF FF FF FF FF FF FF FF FF FF FF FF
 //          01 jos favourite, muuten FF
 // 52 08 B6 17 FD 0B 00 00 3F 04 00 00 00 00 00 00
@@ -164,6 +89,81 @@ func (i Index) String() string {
 		float32(i.CO2)/10,
 		i.HRMMax, i.HRMAvg,
 		i.Unk2)
+}
+
+// Trackpoint flag field bit masks
+const (
+	FLAG_TRKPT_UNK1 = 1 << iota // 0x01 ? often set
+	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
+	FLAG_TRKPT_UNK3             // 0x04 ? often set
+	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
+	FLAG_TRKPT_POI              // 0x10 POI
+	FLAG_TRKPT_HR               // 0x20 Heartrate present
+	FLAG_TRKPT_UNK5             // 0x40 ? never seen
+	FLAG_TRKPT_UNK6             // 0x80 ? never seen
+	// Last two are probably cadence and speed
+)
+
+type Trackpoint struct {
+	RawTime  MTKTime
+	Lat      float32 // North Positive
+	Lon      float32 // East Positive
+	Height   int16
+	Speed    uint16
+	Unk1     byte
+	Flags    byte
+	HR       uint16
+	Alt      int16
+	Heading  uint16
+	Distance uint32
+	Unk2     uint32 // Cadence?
+}
+
+type Track []Trackpoint
+
+func (t Trackpoint) IsPOI() bool {
+	return t.Flags&FLAG_TRKPT_POI != 0
+}
+
+func (t Trackpoint) HasHR() bool {
+	return t.Flags&FLAG_TRKPT_HR != 0
+}
+
+// TODO: Find out which flag controls cadence
+func (t Trackpoint) HasCadence() bool {
+	return false
+}
+
+func (t Trackpoint) Time() time.Time {
+	return t.RawTime.Value()
+}
+
+func (t Trackpoint) UnknownFields() string {
+	f := "Unk1 %02x|Flags %02x|Unk2 %02x"
+	return fmt.Sprintf(f, t.Unk1, t.Flags, t.Unk2)
+}
+
+// TODO: Add more fields, perhaps?
+func (t Trackpoint) String() string {
+	return fmt.Sprintf(`TRKPT: %s %s, %s
+		Height: %d m, Speed: %.1f m/s, Flags: %02x,
+		HR: %d, Alt: %d m, Heading: %d, Distance: %d m
+		
+		`, t.Time().Format(TRKPTTIME),
+		fmtCoordinate(t.Lat, "N", "S"), fmtCoordinate(t.Lon, "E", "W"),
+		t.Height, float32(t.Speed)/10, t.Flags,
+		t.HR, t.Alt, t.Heading, t.Distance,
+	)
+}
+
+func fmtCoordinate(v float32, pos, neg string) string {
+	switch {
+	case v > 0:
+		return fmt.Sprintf("%0.5f °%s", v, pos)
+	case v < 0:
+		return fmt.Sprintf("%0.5f °%s", -v, neg)
+	}
+	return "0 °"
 }
 
 type MTKTime uint32
