@@ -5,7 +5,7 @@ Reading
 -------
 
 - [x] Store unknown index fields in DB for later analysis. One field, store as text hex.
-- [ ] Store unknown trackpoint fields in DB.
+- [x] Store unknown trackpoint fields in DB.
 - [ ] Stop logging when device plugged in
 - [ ] Skip too short segments while reading
 - [ ] Make the too-short criteria a flag

@@ -12,6 +12,7 @@ const (
 	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
 )
 
+// Trackpoint flag field bit masks
 const (
 	FLAG_TRKPT_UNK1 = 1 << iota // 0x01 ? often set
 	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
@@ -30,13 +31,13 @@ type Trackpoint struct {
 	Lon      float32 // East Positive
 	Height   int16
 	Speed    uint16
-	_        byte
+	Unk1     byte
 	Flags    byte
 	HR       uint16
 	Alt      int16
 	Heading  uint16
 	Distance uint32
-	_        uint32 // Cadence?
+	Unk2     uint32 // Cadence?
 }
 
 type Track []Trackpoint
@@ -51,6 +52,11 @@ func (t Trackpoint) HasHR() bool {
 
 func (t Trackpoint) Time() time.Time {
 	return t.RawTime.Value()
+}
+
+func (t Trackpoint) UnknownFields() string {
+	f := "Unk1 %02x|Flags %02x|Unk2 %02x"
+	return fmt.Sprintf(f, t.Unk1, t.Flags, t.Unk2)
 }
 
 // TODO: Add more fields, perhaps?

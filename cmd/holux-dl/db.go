@@ -94,7 +94,7 @@ func savePoints(tx *sql.Tx, t holux.Track, trackID int64, err error) error {
 
 			_, err = insertPoint.Exec(trackID, point.Time(),
 				point.Lat, point.Lon, point.Alt, point.Height,
-				hr, cd)
+				hr, cd, point.UnknownFields())
 
 		} else {
 			_, err = tx.Exec(INSERT["POI"], trackID, point.Time(),

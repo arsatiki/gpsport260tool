@@ -26,6 +26,8 @@ CREATE TABLE trackpoints (
     "heartrate/bpm" INTEGER,
     "cadence/rpm"   INTEGER,
 
+    unknown TEXT,
+
     FOREIGN KEY(track) REFERENCES tracks(id)
                        ON DELETE CASCADE
 );
@@ -64,8 +66,6 @@ INSERT INTO points_of_interest(track, time, latitude, longitude)
        VALUES (?, ?, ?, ?);
 
 -- INSERT trackpoint
-INSERT INTO trackpoints(track, time, latitude, longitude,
-                        "elevation/m", "height/m",
-                        "heartrate/bpm", "cadence/rpm")
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO trackpoints
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
