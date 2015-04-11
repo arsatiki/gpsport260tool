@@ -2,11 +2,15 @@ package main
 
 import (
 	"database/sql"
-	"holux"
+	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"holux"
 )
+
+const SHORT_TRACK_LIMIT = 60 * time.Second
 
 func main() {
 
@@ -30,13 +34,14 @@ func main() {
 		log.Fatalf("Got error %v, arborting", err)
 	}
 	for k, track := range index {
-		log.Println(track)
+		if !validTrack(track, SHORT_TRACK_LIMIT) {
+			continue
+		}
 
 		points, err := c.GetTrack(track.Offset, track.Size)
 		if err != nil {
 			log.Fatal("Got error %v while reading track %d", err, k)
 		}
-		log.Println(points)
 
 		tx, err := db.Begin()
 		trackID, err := saveTrack(tx, track, err)
@@ -46,6 +51,15 @@ func main() {
 			tx.Rollback()
 			log.Fatalf("Got error while writing track %d:", k, err)
 		}
+
+		fmt.Printf("Stored track %d: %v (%d m, %v)\n",
+			trackID, track.Time(),
+			track.Distance, track.Duration())
+
 		tx.Commit()
 	}
+}
+
+func validTrack(i holux.Index, d time.Duration) bool {
+	return i.Duration() > d
 }
