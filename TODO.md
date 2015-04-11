@@ -12,12 +12,18 @@ Reading
 - [ ] Clear log (with conf flag)
 - [ ] SQL Indices
 - [ ] Print out summaries of tracks with ID for easing upload
+- [ ] Refuse to download if track already exists
 
 Uploading
 ---------
 
 - [ ] Get token from Strava, store to DB
 - [ ] Upload data directly from DB, based on track ids
+
+Other
+-----
+
+- [ ] Godoc everything
 
 Later
 =====
@@ -26,3 +32,4 @@ Later
 - Fix the package naming mess
 - Add upload id field to uploads table for tracking uploads
 - Actually track the uploads at startup
+- Tool for clearing out old debug information (can be done manually first)
