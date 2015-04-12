@@ -19,7 +19,7 @@ const (
 // 37 00 00 00 47 00 0C 00 2E 00 02 00 02 00 00 00
 // |--size---| |smx| |sav| |cal|             HM HA
 // 00 00 00 00 E6 00 00 00 02 00 00 00 00 00 00 00
-// [pois] ?? ]
+// [pois] ?? ] [--ascent-] [-descent-]
 type Index struct {
 	F00         [3]byte // TODO double check
 	UnkFlag     byte    // FF when not favourite, 01 when fav
@@ -39,8 +39,10 @@ type Index struct {
 	CO2      uint16 // hectograms. 1 hg = 100 g
 	HRMMax   byte   // BPM
 	HRMAvg   byte
-	POIs     byte // Can be uint16 or 32 as well.
-	Unk2     [15]byte
+	POIs     uint32 // Can be uint16 or 32 as well.
+	Ascent   uint32 // meters
+	Descent  uint32 // meters
+	Unk2     [4]byte
 }
 
 func (i Index) Name() string {
@@ -79,6 +81,7 @@ func (i Index) String() string {
 	[% 02x]
 	CO2 %.1f kg
 	HRMMax: %d, HRMAvg: %d
+	POIs: %d, Ascent: %d m, Descent: %d m
 	[% 02x] (starts with # of POIs, length?)
 	`
 	return fmt.Sprintf(s, i.F00, i.IsFavorite(), i.RawName, i.Name(), i.Unk,
@@ -88,6 +91,7 @@ func (i Index) String() string {
 		i.Unk1,
 		float32(i.CO2)/10,
 		i.HRMMax, i.HRMAvg,
+		i.POIs, i.Ascent, i.Descent,
 		i.Unk2)
 }
 
