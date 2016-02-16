@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -10,9 +11,15 @@ import (
 	"holux"
 )
 
-const SHORT_TRACK_LIMIT = 60 * time.Second
+var (
+	shortTrackLimit = flag.Duration("drop", 60*time.Second,
+		"Do not download messages shorter than specified duration")
+	clearDeviceLog = flag.Bool("clear", false,
+		"Clear log on device after succesful transfer")
+)
 
 func main() {
+	flag.Parse()
 
 	c, err := holux.Connect()
 
@@ -34,7 +41,7 @@ func main() {
 		log.Fatalf("Got error %v, arborting", err)
 	}
 	for k, track := range index {
-		if !validTrack(track, SHORT_TRACK_LIMIT) {
+		if !validTrack(track, *shortTrackLimit) {
 			continue
 		}
 
@@ -57,6 +64,10 @@ func main() {
 			track.Distance, track.Duration())
 
 		tx.Commit()
+	}
+
+	if *clearDeviceLog {
+		c.ClearLog()
 	}
 }
 

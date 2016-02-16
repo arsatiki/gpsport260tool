@@ -9,7 +9,7 @@ Reading
 - [x] Take out debug information
 - [ ] Stop logging when device plugged in
 - [x] Skip too short segments while reading
-- [ ] Make the too-short criteria a flag
+- [x] Make the too-short criteria a flag
 - [ ] Clear log (with conf flag)
 - [ ] Create SQL Indices for foreign keys
 - [x] Print out summaries of tracks with ID for easing upload
@@ -42,3 +42,4 @@ Refactoring ideas
 -----------------
 
 - CRC computation
+- Concurrent track reading & database writing
