@@ -39,7 +39,9 @@ type Index struct {
 	CO2      uint16 // hectograms. 1 hg = 100 g
 	HRMMax   byte   // BPM
 	HRMAvg   byte
-	POIs     uint32 // Can be uint16 or 32 as well.
+	POIs     uint16 // Might be byte too.
+	CADMax   byte
+	CADAvg   byte
 	Ascent   uint32 // meters
 	Descent  uint32 // meters
 	Unk2     [4]byte
@@ -74,25 +76,25 @@ func (i Index) UnknownFields() string {
 }
 
 func (i Index) String() string {
-	s := `[FF0000: %02x] Favorite: %v [Name: % 02x (%s)] [Unk: %02x]
+	s := `Favorite: %v [Name: % 02x (%s)]
 	Time: %v: Distance: %d m, Duration: %v
 	Offset: %d points (%d B), Size: %d points (%d B)
 	SPDMAX: %.1f km/h, SPDAVG: %.1f km/h, CAL: %d
-	[% 02x]
 	CO2 %.1f kg
 	HRMMax: %d, HRMAvg: %d
+	CADMax: %d, CADAvg: %d
 	POIs: %d, Ascent: %d m, Descent: %d m
-	[% 02x] (starts with # of POIs, length?)
+	Unknown: %s
 	`
-	return fmt.Sprintf(s, i.F00, i.IsFavorite(), i.RawName, i.Name(), i.Unk,
+	return fmt.Sprintf(s, i.IsFavorite(), i.RawName, i.Name(),
 		i.Time(), i.Distance, i.Duration(),
 		i.Offset, i.Offset*32, i.Size, i.Size*32,
 		float32(i.SpeedMax)/10, float32(i.SpeedAvg)/10, i.Calories,
-		i.Unk1,
 		float32(i.CO2)/10,
 		i.HRMMax, i.HRMAvg,
+		i.CADMax, i.CADAvg,
 		i.POIs, i.Ascent, i.Descent,
-		i.Unk2)
+		i.UnknownFields())
 }
 
 // Trackpoint flag field bit masks
@@ -103,24 +105,25 @@ const (
 	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
 	FLAG_TRKPT_POI              // 0x10 POI
 	FLAG_TRKPT_HR               // 0x20 Heartrate present
-	FLAG_TRKPT_UNK5             // 0x40 ? never seen
+	FLAG_TRKPT_CAD              // 0x40 Cadence present
 	FLAG_TRKPT_UNK6             // 0x80 ? never seen
 	// Last two are probably cadence and speed
 )
 
 type Trackpoint struct {
-	RawTime  MTKTime
-	Lat      float32 // North Positive
-	Lon      float32 // East Positive
-	Height   int16
-	Speed    uint16
-	Unk1     byte
-	Flags    byte
-	HR       uint16
-	Alt      int16
-	Heading  uint16
-	Distance uint32
-	Unk2     uint32 // Cadence?
+	RawTime            MTKTime
+	Lat                float32 // North Positive
+	Lon                float32 // East Positive
+	GPSAltitude        int16
+	Speed              uint16 // km/h
+	Unk1               byte   // Oisko grade?
+	Flags              byte
+	HR                 byte
+	Cadence            byte
+	BarometricAltitude int16
+	Heading            uint16
+	Distance           uint32
+	Unk2               uint32 // Cadence?
 }
 
 type Track []Trackpoint
@@ -133,9 +136,8 @@ func (t Trackpoint) HasHR() bool {
 	return t.Flags&FLAG_TRKPT_HR != 0
 }
 
-// TODO: Find out which flag controls cadence
 func (t Trackpoint) HasCadence() bool {
-	return false
+	return t.Flags&FLAG_TRKPT_CAD != 0
 }
 
 func (t Trackpoint) Time() time.Time {
@@ -143,20 +145,21 @@ func (t Trackpoint) Time() time.Time {
 }
 
 func (t Trackpoint) UnknownFields() string {
-	f := "Unk1 %02x|Flags %02x|Unk2 %02x"
+	f := "Unk1 %02x|Flags %02x|Unk2 %08x"
 	return fmt.Sprintf(f, t.Unk1, t.Flags, t.Unk2)
 }
 
 // TODO: Add more fields, perhaps?
 func (t Trackpoint) String() string {
 	return fmt.Sprintf(`TRKPT: %s %s, %s
-		Height: %d m, Speed: %.1f m/s, Flags: %02x,
-		HR: %d, Alt: %d m, Heading: %d, Distance: %d m
-		
+		Height (GPS): %d m, Speed: %.1f km/h,
+		HR: %d, Cadence: %d, Alt (Baro): %d m, Heading: %d, Distance: %d m
+		UnknownFields: %s
 		`, t.Time().Format(TRKPTTIME),
 		fmtCoordinate(t.Lat, "N", "S"), fmtCoordinate(t.Lon, "E", "W"),
-		t.Height, float32(t.Speed)/10, t.Flags,
-		t.HR, t.Alt, t.Heading, t.Distance,
+		t.GPSAltitude, float32(t.Speed)/10,
+		t.HR, t.Cadence, t.BarometricAltitude, t.Heading, t.Distance,
+		t.UnknownFields(),
 	)
 }
 
