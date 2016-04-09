@@ -50,7 +50,7 @@ func main() {
 			log.Fatalf("create error: %v\n", err)
 		}
 
-		doc := NewGPX(nameForUpload(track), track.Time(), points)
+		doc := NewGPX(nameForUpload(track), track.Time(), points, track.String())
 
 		dst.Write([]byte(xml.Header))
 		enc := xml.NewEncoder(dst)
