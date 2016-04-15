@@ -97,18 +97,6 @@ func (i Index) String() string {
 		i.UnknownFields())
 }
 
-// Trackpoint flag field bit masks
-const (
-	FLAG_TRKPT_UNK1 = 1 << iota // 0x01 ? often set
-	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
-	FLAG_TRKPT_UNK3             // 0x04 ? often set
-	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
-	FLAG_TRKPT_POI              // 0x10 POI
-	FLAG_TRKPT_HR               // 0x20 Heartrate present
-	FLAG_TRKPT_CAD              // 0x40 Cadence present
-	FLAG_TRKPT_UNK6             // 0x80 ? never seen
-	// Last two are probably cadence and speed
-)
 
 type Trackpoint struct {
 	RawTime            MTKTime
@@ -117,7 +105,7 @@ type Trackpoint struct {
 	GPSAltitude        int16
 	Speed              uint16 // km/h
 	Unk1               byte   // Oisko grade?
-	Flags              byte
+	Flags              TPFlag
 	HR                 byte
 	Cadence            byte
 	BarometricAltitude int16
@@ -145,7 +133,7 @@ func (t Trackpoint) Time() time.Time {
 }
 
 func (t Trackpoint) UnknownFields() string {
-	f := "Unk1 %02x|Flags %02x|Unk2 %08x"
+	f := "Unk1 %02x|Flags %s|Unk2 %08x"
 	return fmt.Sprintf(f, t.Unk1, t.Flags, t.Unk2)
 }
 
@@ -177,4 +165,39 @@ type MTKTime uint32
 
 func (t MTKTime) Value() time.Time {
 	return time.Unix(int64(t)+Y2000, 0)
+}
+
+// Trackpoint flag field bit masks
+type TPFlag byte
+const (
+	FLAG_TRKPT_UNK1 TPFlag = 1 << iota // 0x01 ? often set
+	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
+	FLAG_TRKPT_UNK3             // 0x04 ? often set
+	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
+	FLAG_TRKPT_POI              // 0x10 POI
+	FLAG_TRKPT_HR               // 0x20 Heartrate present
+	FLAG_TRKPT_CAD              // 0x40 Cadence present
+	FLAG_TRKPT_UNK6             // 0x80 ? never seen
+)
+
+func (f TPFlag) String() string{
+	names := []string{
+		"UK1",
+		"UK2",
+		"UK3",
+		"UK4",
+		"POI",
+		"HRM",
+		"CAD",
+		"UK6",
+	}
+	
+	seen := make([]string, 0, 8)
+	
+	for k, name := range names {
+		if f & (1 << uint8(k)) != 0 {
+			seen = append(seen, name)
+		}
+	}
+	return fmt.Sprintf("% s", seen)
 }
