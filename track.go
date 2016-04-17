@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	Y2000     = 946684800
-	TRACKSIZE = 32
-	INDEXSIZE = 64
-	TRKPTTIME = "2006-01-02 15:04:05Z07:00"
+	y2000     = 946684800
+	trackSize = 32
+	indexSize = 64
+	trkptTime = "2006-01-02 15:04:05Z07:00"
 )
 
 // FF 00 00 FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -97,7 +97,6 @@ func (i Index) String() string {
 		i.UnknownFields())
 }
 
-
 type Trackpoint struct {
 	RawTime            MTKTime
 	Lat                float32 // North Positive
@@ -117,15 +116,15 @@ type Trackpoint struct {
 type Track []Trackpoint
 
 func (t Trackpoint) IsPOI() bool {
-	return t.Flags&FLAG_TRKPT_POI != 0
+	return t.Flags&flagTrkptPOI != 0
 }
 
 func (t Trackpoint) HasHR() bool {
-	return t.Flags&FLAG_TRKPT_HR != 0
+	return t.Flags&flagTrkptHR != 0
 }
 
 func (t Trackpoint) HasCadence() bool {
-	return t.Flags&FLAG_TRKPT_CAD != 0
+	return t.Flags&flagTrkptCad != 0
 }
 
 func (t Trackpoint) Time() time.Time {
@@ -143,7 +142,7 @@ func (t Trackpoint) String() string {
 		Height (GPS): %d m, Speed: %.1f km/h,
 		HR: %d, Cadence: %d, Alt (Baro): %d m, Heading: %d, Distance: %d m
 		UnknownFields: %s
-		`, t.Time().Format(TRKPTTIME),
+		`, t.Time().Format(trkptTime),
 		fmtCoordinate(t.Lat, "N", "S"), fmtCoordinate(t.Lon, "E", "W"),
 		t.GPSAltitude, float32(t.Speed)/10,
 		t.HR, t.Cadence, t.BarometricAltitude, t.Heading, t.Distance,
@@ -164,23 +163,24 @@ func fmtCoordinate(v float32, pos, neg string) string {
 type MTKTime uint32
 
 func (t MTKTime) Value() time.Time {
-	return time.Unix(int64(t)+Y2000, 0)
+	return time.Unix(int64(t)+y2000, 0)
 }
 
 // Trackpoint flag field bit masks
 type TPFlag byte
+
 const (
-	FLAG_TRKPT_UNK1 TPFlag = 1 << iota // 0x01 ? often set
-	FLAG_TRKPT_UNK2             // 0x02 ? rarely set
-	FLAG_TRKPT_UNK3             // 0x04 ? often set
-	FLAG_TRKPT_UNK4             // 0x08 ? sometimes set, when 0x04 isn't
-	FLAG_TRKPT_POI              // 0x10 POI
-	FLAG_TRKPT_HR               // 0x20 Heartrate present
-	FLAG_TRKPT_CAD              // 0x40 Cadence present
-	FLAG_TRKPT_UNK6             // 0x80 ? never seen
+	flagTrkptUnk1 TPFlag = 1 << iota // 0x01 ? often set
+	flagTrkptUnk2                    // 0x02 ? rarely set
+	flagTrkptUnk3                    // 0x04 ? often set
+	flagTrkptUnk4                    // 0x08 ? sometimes set, when 0x04 isn't
+	flagTrkptPOI                     // 0x10 POI
+	flagTrkptHR                      // 0x20 Heartrate present
+	flagTrkptCad                     // 0x40 Cadence present
+	flagTrkptUnk6                    // 0x80 ? never seen
 )
 
-func (f TPFlag) String() string{
+func (f TPFlag) String() string {
 	names := []string{
 		"UK1",
 		"UK2",
@@ -191,11 +191,11 @@ func (f TPFlag) String() string{
 		"CAD",
 		"UK6",
 	}
-	
+
 	seen := make([]string, 0, 8)
-	
+
 	for k, name := range names {
-		if f & (1 << uint8(k)) != 0 {
+		if f&(1<<uint8(k)) != 0 {
 			seen = append(seen, name)
 		}
 	}

@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-const CMDFMT = "$%s*%02X\r\n"
-
 // Conn manages the line-based and binary transmission with any
 // io.Reader. In particular, that Reader can be a serial connection
 // with the GPS tracker.
@@ -25,11 +23,16 @@ func NewConn(rw io.ReadWriter) Conn {
 	return Conn{rw, lines}
 }
 
+func fprintCmd(w io.Writer, command string, checksum byte) {
+	var cmdfmt = "$%s*%02X\r\n"
+	fmt.Fprintf(w, cmdfmt, command, checksum)
+}
+
 // TODO: These two should take errors.
 func (c Conn) Send(cmd string) {
 	log.Println("Sending ", cmd)
 	cs := foldXOR([]byte(cmd))
-	fmt.Fprintf(c.rw, CMDFMT, cmd, cs)
+	fprintCmd(c.rw, cmd, cs)
 }
 
 func (c Conn) Sendf(format string, a ...interface{}) {
