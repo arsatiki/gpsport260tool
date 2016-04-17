@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const NAP = 150 * time.Millisecond
+const napLength = 150 * time.Millisecond
 
 // Client describes the protocol level interactions with
 // the tracker. Methods starting with Get do multiple requests
@@ -49,7 +49,7 @@ func (c Client) Hello() {
 	// TODO: Whatabout 832, 861 (firmware)
 	// TODO: Handle errors before going here.
 	c.SetHighSpeed(921600)
-	time.Sleep(NAP)
+	time.Sleep(napLength)
 }
 
 func (c Client) Bye() {
