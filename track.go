@@ -2,6 +2,7 @@ package holux
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -114,6 +115,27 @@ type Trackpoint struct {
 }
 
 type Track []Trackpoint
+
+func (t Track) NormalizeHR() {
+	var adjustment int64
+
+	for k, _ := range t {
+		if k == 0 || normalHRDelta(t[k-1], t[k]) {
+			adjustment = 0
+			continue
+		}
+		if adjustment == 0 {
+			adjustment = int64(t[k-1].HR) - int64(t[k].HR)
+		}
+		t[k].HR = byte(int64(t[k].HR) + adjustment)
+	}
+}
+
+func normalHRDelta(prev, curr Trackpoint) bool {
+	Δt := curr.RawTime - prev.RawTime
+	Δhr := math.Abs(float64(curr.HR) - float64(prev.HR))
+	return Δt > 60 || Δhr < 30
+}
 
 func (t Trackpoint) IsPOI() bool {
 	return t.Flags&flagTrkptPOI != 0

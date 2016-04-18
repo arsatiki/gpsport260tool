@@ -45,6 +45,8 @@ func main() {
 			log.Fatal("Got error %v while reading track %d", err, k)
 		}
 
+		points.NormalizeHR()
+
 		dst, err := os.Create(nameForTrack(track))
 		if err != nil {
 			log.Fatalf("create error: %v\n", err)
@@ -84,3 +86,4 @@ func nameForUpload(i holux.Index) string {
 func validTrack(i holux.Index, minDuration time.Duration, since time.Duration) bool {
 	return i.Duration() > minDuration && time.Since(i.Time()) < since
 }
+
