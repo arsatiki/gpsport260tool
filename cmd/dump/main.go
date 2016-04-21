@@ -45,6 +45,7 @@ func main() {
 			log.Fatal("Got error %v while reading track %d", err, k)
 		}
 
+		// TODO DON't NORMALIZE IF THERE IS NO HRM
 		points.NormalizeHR()
 
 		dst, err := os.Create(nameForTrack(track))
