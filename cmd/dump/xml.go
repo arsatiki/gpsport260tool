@@ -32,8 +32,8 @@ type Trkpt struct {
 
 	// Heartrate and cadence are stored in extensions
 	// and may be empty.
-	HR      int64 `xml:"extensions>heartrate,omitempty"`
-	Cadence int64 `xml:"extensions>cadence,omitempty"`
+	HR      byte `xml:"extensions>heartrate,omitempty"`
+	Cadence byte `xml:"extensions>cadence,omitempty"`
 
 	Repr string `xml:",comment"`
 }
@@ -54,8 +54,8 @@ func NewGPX(name string, t time.Time, track holux.Track, repr string) GPX {
 		pts[k] = Trkpt{
 			Lat: p.Lat, Lon: p.Lon, Ele: float32(p.GPSAltitude),
 			Time:    GPXTime{p.Time()},
-			HR:      int64(p.HR),
-			Cadence: int64(p.Cadence),
+			HR:      p.HR,
+			Cadence: p.Cadence,
 			Repr:    p.String(),
 		}
 	}
