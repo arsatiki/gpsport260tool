@@ -103,15 +103,15 @@ type Trackpoint struct {
 	Lat                float32 // North Positive
 	Lon                float32 // East Positive
 	GPSAltitude        int16
-	Speed              uint16 // km/h
-	Unk1               byte   // Oisko grade?
+	Speed              uint16 // hm/h
+	Unk1               byte   // Heading mod 255???
 	Flags              TPFlag
 	HR                 byte
 	Cadence            byte
 	BarometricAltitude int16
-	Heading            uint16
+	Heading            uint16 // Not a heading tbh. Grade?
 	Distance           uint32
-	Unk2               uint32 // Cadence?
+	Unk2               uint32 // Never seen above 00
 }
 
 type Track []Trackpoint
