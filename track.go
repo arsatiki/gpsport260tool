@@ -120,7 +120,7 @@ func (t Track) NormalizeHR() {
 	var adjustment int64
 
 	for k, _ := range t {
-		if k == 0 || normalHRDelta(t[k-1], t[k]) {
+		if k == 0 || t[k].HR == 0 || normalHRDelta(t[k-1], t[k]) {
 			adjustment = 0
 			continue
 		}
